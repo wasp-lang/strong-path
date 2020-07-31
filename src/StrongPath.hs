@@ -20,6 +20,9 @@ data Path b t = RelDir  (P.Path P.Rel P.Dir)
               | AbsFile (P.Path P.Abs P.File)
     deriving (Show, Eq)
 
+-- TODO: Should I consider somehow allow people to use Symbol, from GHC.Types, instead of them having to
+-- declare their own data types to name the directory?
+
 data Abs
 data Rel dir
 data Dir dir
@@ -30,16 +33,16 @@ data File
 --   This means we would implement our own [reldir|foobar|] stuff.
 
 fromPathRelDir :: P.Path P.Rel P.Dir -> Path (Rel a) (Dir b)
-fromPathRelDir p = RelDir p
+fromPathRelDir = RelDir
 
 fromPathRelFile :: P.Path P.Rel P.File -> Path (Rel a) File
-fromPathRelFile p = RelFile p
+fromPathRelFile = RelFile
 
 fromPathAbsDir :: P.Path P.Abs P.Dir -> Path Abs (Dir a)
-fromPathAbsDir p = AbsDir p
+fromPathAbsDir = AbsDir
 
 fromPathAbsFile :: P.Path P.Abs P.File -> Path Abs File
-fromPathAbsFile p = AbsFile p
+fromPathAbsFile = AbsFile
 
 
 toPathRelDir :: Path (Rel a) (Dir b) -> P.Path P.Rel P.Dir
@@ -60,16 +63,16 @@ toPathAbsFile _ = impossible
 
 
 parseRelDir :: MonadThrow m => FilePath -> m (Path (Rel d1) (Dir d2))
-parseRelDir fp = P.parseRelDir fp >>= return . fromPathRelDir
+parseRelDir fp = fromPathRelDir <$> P.parseRelDir fp
 
 parseRelFile :: MonadThrow m => FilePath -> m (Path (Rel d) File)
-parseRelFile fp = P.parseRelFile fp >>= return . fromPathRelFile
+parseRelFile fp = fromPathRelFile <$> P.parseRelFile fp
 
 parseAbsDir :: MonadThrow m => FilePath -> m (Path Abs (Dir d))
-parseAbsDir fp = P.parseAbsDir fp >>= return . fromPathAbsDir
+parseAbsDir fp = fromPathAbsDir <$> P.parseAbsDir fp
 
 parseAbsFile :: MonadThrow m => FilePath -> m (Path Abs File)
-parseAbsFile fp = P.parseAbsFile fp >>= return . fromPathAbsFile
+parseAbsFile fp = fromPathAbsFile <$> P.parseAbsFile fp
 
 
 toFilePath :: Path b t -> FilePath
