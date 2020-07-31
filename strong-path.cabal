@@ -1,0 +1,59 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 5ce5c762568f03f7afeb9e155e8fa900669bb074e03b83c533ce6d4061326470
+
+name:           strong-path
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/Martinsos/strong-path#readme>
+homepage:       https://github.com/Martinsos/strong-path#readme
+bug-reports:    https://github.com/Martinsos/strong-path/issues
+author:         Martin Sosic
+maintainer:     sosic.martin@gmail.com
+copyright:      2020 Martin Sosic
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/Martinsos/strong-path
+
+library
+  exposed-modules:
+      StrongPath
+  other-modules:
+      Paths_strong_path
+  hs-source-dirs:
+      src
+  ghc-options: -Wall
+  build-depends:
+      base >=4.7 && <5
+    , exceptions
+    , path
+  default-language: Haskell2010
+
+test-suite strong-path-test
+  type: exitcode-stdio-1.0
+  main-is: TastyDiscoverDriver.hs
+  other-modules:
+      StrongPathTest
+      Paths_strong_path
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , path
+    , strong-path
+    , tasty
+    , tasty-discover
+    , tasty-hspec
+    , tasty-quickcheck
+  default-language: Haskell2010
