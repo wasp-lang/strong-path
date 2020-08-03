@@ -13,7 +13,7 @@ module StrongPath
 import qualified Path as P
 import Control.Monad.Catch (MonadThrow)
 
-
+-- | `b` stands for base and `t` stands for type.
 data Path b t = RelDir  (P.Path P.Rel P.Dir)
               | RelFile (P.Path P.Rel P.File)
               | AbsDir  (P.Path P.Abs P.Dir)
@@ -62,17 +62,17 @@ toPathAbsFile (AbsFile p) = p
 toPathAbsFile _ = impossible
 
 
-parseRelDir :: MonadThrow m => FilePath -> m (Path (Rel d1) (Dir d2))
-parseRelDir fp = fromPathRelDir <$> P.parseRelDir fp
-
-parseRelFile :: MonadThrow m => FilePath -> m (Path (Rel d) File)
-parseRelFile fp = fromPathRelFile <$> P.parseRelFile fp
+parseAbsFile :: MonadThrow m => FilePath -> m (Path Abs File)
+parseAbsFile fp = fromPathAbsFile <$> P.parseAbsFile fp
 
 parseAbsDir :: MonadThrow m => FilePath -> m (Path Abs (Dir d))
 parseAbsDir fp = fromPathAbsDir <$> P.parseAbsDir fp
 
-parseAbsFile :: MonadThrow m => FilePath -> m (Path Abs File)
-parseAbsFile fp = fromPathAbsFile <$> P.parseAbsFile fp
+parseRelFile :: MonadThrow m => FilePath -> m (Path (Rel d) File)
+parseRelFile fp = fromPathRelFile <$> P.parseRelFile fp
+
+parseRelDir :: MonadThrow m => FilePath -> m (Path (Rel d1) (Dir d2))
+parseRelDir fp = fromPathRelDir <$> P.parseRelDir fp
 
 
 toFilePath :: Path b t -> FilePath
