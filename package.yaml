@@ -29,6 +29,7 @@ library:
   dependencies:
     - path
     - exceptions
+    - filepath
 
 tests:
   strong-path-test:
@@ -45,3 +46,4 @@ tests:
       - tasty-quickcheck
       - tasty-discover
       - path
+      - filepath
