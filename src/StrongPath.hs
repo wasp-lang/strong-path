@@ -43,6 +43,8 @@ import qualified System.FilePath.Windows as FPW
 
 import           StrongPath.Internal
 
+-- TODO: Add relDirToWindows and relFileToWindows?
+-- TODO: Implement relFile?
 
 -- TODO: We still depend on Path for creating hardcoded paths via generics. Any way to go around that?
 --   Maybe implement our own mechanism for that, so that people don't have to know about / use Path?
