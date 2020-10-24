@@ -1,0 +1,41 @@
+platform: x64
+
+version: '{build}'
+
+skip_commits:
+  message: /\[skip ci\]/
+
+branches:
+  only:
+    - master # This will still build PRs.
+
+environment:
+  PATH: c:/bin;%PATH%
+  STACK_ROOT: c:/stack
+  TMP: c:/tmp # https://github.com/haskell/cabal/issues/5386
+
+# `a -> b` means that cached item `a` will be invalidated if `b` changes.
+# Important: AppVeyor has 1GB limit on cache for free account.
+cache:
+  # We made these caches dependent on stack.yaml, because we want them
+  # to clear out if new resolver is set, otherwise they would be taking
+  # too much space if they would contain libraries for multiple versions
+  # of resolvers.
+  - c:/stack -> stack.yaml
+  # This dir is really big, hundreds of MBs, but it reduces build time from 20 to 2 minutes.
+  - c:/Users/appveyor/AppData/Local/Programs/stack -> stack.yaml
+
+install:
+  # Install latest stable stack.
+  - ps: |
+      curl -OutFile stack.zip -Uri https://get.haskellstack.org/stable/windows-x86_64.zip
+      7z x stack.zip stack.exe
+      mkdir c:/bin
+      mv stack.exe c:/bin
+build_script:
+  # Building external libraries/packages.
+  - cmd: stack setup > nul # Do it silently due to lot of not very interesting output.
+  - cmd: stack test --only-dependencies
+
+test_script:
+  - cmd: stack test

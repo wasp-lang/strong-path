@@ -1,0 +1,45 @@
+os:
+  - linux
+  - osx
+
+# Do not choose a language; we provide our own build tools.
+language: generic
+
+branches:
+  only:
+    - master # This will still build PRs.
+
+# Caching so the next build will be fast too.
+cache:
+  directories:
+    - $HOME/.ghc
+    - $HOME/.cabal
+    # Where GHC and Stackage packages (per specific resolver/snapshot) get installed.
+    # Caching this avoids stack downloading GHC and building all the packages each time.
+    - $HOME/.stack
+
+# Ensure necessary system libraries are present.
+addons:
+  apt:
+    packages:
+      - libgmp-dev
+
+before_install:
+  - mkdir -p ~/.local/bin && export PATH=$HOME/.local/bin:$PATH
+  # Download and install stack executable.
+  - |
+    if [ "$TRAVIS_OS_NAME" = "osx" ]
+    then
+      travis_retry curl --insecure -L https://get.haskellstack.org/stable/osx-x86_64.tar.gz \
+        | tar xz --strip-components=1 --include '*/stack' -C ~/.local/bin
+    else
+      travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz \
+        | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+    fi
+  - stack --numeric-version
+
+install:
+  - stack --no-terminal --install-ghc test --only-dependencies
+
+script:
+  - stack --no-terminal test
