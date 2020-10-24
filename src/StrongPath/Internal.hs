@@ -9,7 +9,7 @@ import qualified System.FilePath.Windows as FPW
 
 
 -- | s -> standard, b -> base, t -> type
-data Path' s b t
+data Path s b t
     -- System
     = RelDir  (P.Path P.Rel P.Dir) RelPathPrefix
     | RelFile (P.Path P.Rel P.File) RelPathPrefix
@@ -31,30 +31,31 @@ data RelPathPrefix = ParentDir Int -- ^ ../, Int saying how many times it repeat
                    | NoPrefix
     deriving (Show, Eq)
 
-type Path = Path' System
-
 -- | base
 data Abs
 data Rel dir
 
 -- | type
 data Dir dir
-data File' file
-
-type File = File' ()
+data File file
 
 -- | standard
 data System -- Depends on the platform, it is either Posix or Windows.
 data Windows
 data Posix
 
+type Path' = Path System
+type Rel' = Rel ()
+type Dir' = Dir ()
+type File' = File ()
+
 
 parseRelFP :: MonadThrow m
-    => (P.Path pb pt -> RelPathPrefix -> Path' s (Rel d) t)
+    => (P.Path pb pt -> RelPathPrefix -> Path s (Rel d) t)
     -> [Char]
     -> (FilePath -> m (P.Path pb pt))
     -> FilePath
-    -> m (Path' s (Rel d) t)
+    -> m (Path s (Rel d) t)
 parseRelFP constructor validSeparators pathParser fp =
     let (prefix, fp') = extractRelPathPrefix validSeparators fp
         fp'' = if fp' == "" then "." else fp' -- Because Path Rel parsers can't handle just "".
@@ -133,10 +134,10 @@ prefixNumParentDirs :: RelPathPrefix -> Int
 prefixNumParentDirs NoPrefix      = 0
 prefixNumParentDirs (ParentDir n) = n
 
-relPathNumParentDirs :: Path' s (Rel r) t -> Int
+relPathNumParentDirs :: Path s (Rel r) t -> Int
 relPathNumParentDirs = prefixNumParentDirs . relPathPrefix
 
-relPathPrefix :: Path' s (Rel r) t -> RelPathPrefix
+relPathPrefix :: Path s (Rel r) t -> RelPathPrefix
 relPathPrefix sp = case sp of
     RelDir _ pr   -> pr
     RelFile _ pr  -> pr

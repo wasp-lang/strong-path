@@ -7,15 +7,15 @@ Strongly typed file paths in Haskell.
 
 ```hs
 -- System path to "foo" directory, relative to "bar" directory.
-dirFooInDirBar :: Path' System (Rel BarDir) (Dir FooDir)
+dirFooInDirBar :: Path System (Rel BarDir) (Dir FooDir)
 dirFooInDirBar = fromPathRelDir [P.reldir|somedir/foo/|]
 
 -- Abs system path to "bar" directory.
-dirBar :: Path Abs (Dir BarDir)
+dirBar :: Path System Abs (Dir BarDir)
 dirBar = fromPathAbsDir [P.absdir|/bar/|]
 
 -- Abs path to "foo" directory.
-dirFoo :: Path Abs (Dir FooDir)
+dirFoo :: Path System Abs (Dir FooDir)
 dirFoo = dirBar </> dirFooInDirBar
 
 data BarDir -- Represents Bar directory.
@@ -95,8 +95,8 @@ In such case, we usually name them via following scheme: `<function_name_prefix>
 This results in 12 functions, for all 12 combinations of path type.
 
 Examples:
-- `parseAbsFile` does something with `Path System Abs File`
-- `parseRelFileP` does something with `Path Posix (Rel r) File`
+- `parseAbsFile` does something with `Path System Abs (File f)`
+- `parseRelFileP` does something with `Path Posix (Rel r) (File f)`
 - `parseRelDirW` does something with `Path Windows (Rel r) (Dir d)`
 
 ### Constructors
@@ -104,7 +104,7 @@ Path can be constructed from `FilePath`:
 ```hs
 parse<base><type><standard> :: MonadThrow m => FilePath -> m (<corresponding_path_type>)
 -- Examples (there are 12 functions in total):
-parseAbsFile :: MonadThrow m => FilePath -> m (Path System  Abs      File)
+parseAbsFile :: MonadThrow m => FilePath -> m (Path System  Abs      (File f))
 parseRelDirW :: MonadThrow m => FilePath -> m (Path Windows (Rel d1) (Dir d2))
 ```
 
@@ -112,7 +112,7 @@ or from `Path`:
 ```hs
 from<base><type><standard> :: <corresponding_Path.path_type> -> <corresponding_path_type>
 -- Examples: (there are 12 functions in total):
-fromPathAbsFile :: P.Path  P.Abs  P.File -> Path System  Abs     File
+fromPathAbsFile :: P.Path  P.Abs  P.File -> Path System  Abs     (File f)
 fromPathRelDirW :: PW.Path PW.Rel PW.Dir -> Path Windows (Rel a) (Dir b)
 ```
 
@@ -126,8 +126,8 @@ or via any of the 12 functions that accept specific path type:
 ```hs
 from<base><type><standard> :: <corresponding_path_type> -> FilePath
 -- Examples: (there are 12 functions in total):
-fromAbsFile :: Path System Abs     File    -> FilePath
-fromRelDirP :: Path Posix  (Rel r) (Dir d) -> FilePath
+fromAbsFile :: Path System Abs     (File f) -> FilePath
+fromRelDirP :: Path Posix  (Rel r) (Dir d)  -> FilePath
 ```
 We recommend using specific functions instead of `toFilePath`, because that way you are explicit about which path you expect and if that expectancy is not met, type system will catch it.
 
@@ -135,8 +135,8 @@ Path can also be unpacked into `P.Path`:
 ```hs
 toPath<base><type><standard> :: <corresponding_path_type> -> <corresponding_Path.path_type>
 -- Examples: (there are 12 functions in total):
-toPathAbsDir   :: Path System  Abs     (Dir a) -> P.Path  P.Abs  P.Dir
-toPathRelFileW :: Path Windows (Rel a) File    -> PW.Path PW.Rel PW.File
+toPathAbsDir   :: Path System  Abs     (Dir a)  -> P.Path  P.Abs  P.Dir
+toPathRelFileW :: Path Windows (Rel a) (File f) -> PW.Path PW.Rel PW.File
 ```
 
 ### Operations
@@ -168,10 +168,9 @@ relDirToPosix :: MonadThrow m => Path s (Rel r) (Dir d) -> m (Path Posix (Rel r)
 
 `relFileToPosix` transforms relative file into posix, if not already.
 ```hs
-relFileToPosix :: MonadThrow m => Path s (Rel r) File -> m (Path Posix (Rel r) File)
+relFileToPosix :: MonadThrow m => Path s (Rel r) (File f) -> m (Path Posix (Rel r) (File f))
 ```
 
-TODO: Use (File f) or File', not just File, in whole README.
 TODO: Aliases
 
 ## Usage and examples

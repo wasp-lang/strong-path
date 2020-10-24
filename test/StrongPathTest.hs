@@ -26,11 +26,11 @@ data Fizz
 spec_StrongPath :: Spec
 spec_StrongPath = do
     describe "Example with Foo file and Bar, Fizz and Kokolo dirs" $ do
-        let fooFileInBarDir = fromPathRelFile [P.relfile|foo.txt|] :: Path (Rel Bar) File
-        let barDirInFizzDir = fromPathRelDir [P.reldir|kokolo/bar|] :: Path (Rel Fizz) (Dir Bar)
-        let fizzDir = (fromPathAbsDir $ systemPathRoot P.</> [P.reldir|fizz|]) :: Path Abs (Dir Fizz)
-        let fooFile = (fizzDir </> barDirInFizzDir </> fooFileInBarDir) :: Path Abs File
-        let fooFileInFizzDir = (barDirInFizzDir </> fooFileInBarDir) :: Path (Rel Fizz) File
+        let fooFileInBarDir = fromPathRelFile [P.relfile|foo.txt|] :: Path' (Rel Bar) File'
+        let barDirInFizzDir = fromPathRelDir [P.reldir|kokolo/bar|] :: Path' (Rel Fizz) (Dir Bar)
+        let fizzDir = (fromPathAbsDir $ systemPathRoot P.</> [P.reldir|fizz|]) :: Path' Abs (Dir Fizz)
+        let fooFile = (fizzDir </> barDirInFizzDir </> fooFileInBarDir) :: Path' Abs File'
+        let fooFileInFizzDir = (barDirInFizzDir </> fooFileInBarDir) :: Path' (Rel Fizz) File'
 
         it "Paths are correctly concatenated" $ do
             P.toFilePath (toPathAbsFile fooFile) `shouldBe` posixToSystemFp "/fizz/kokolo/bar/foo.txt"
