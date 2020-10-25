@@ -1,7 +1,7 @@
 name:                strong-path
 version:             0.1.0.0
-github:              "Martinsos/strong-path"
-license:             BSD3
+github:              "wasp-lang/strong-path"
+license:             MIT
 author:              "Martin Sosic"
 maintainer:          "sosic.martin@gmail.com"
 copyright:           "2020 Martin Sosic"
@@ -11,13 +11,13 @@ extra-source-files:
   - ChangeLog.md
 
 # Metadata used when publishing your package
-# synopsis:            Strongly typed paths in Haskell.
-# category:            System, Filesystem
+synopsis:            Strongly typed paths in Haskell.
+category:            System, Filesystem
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/Martinsos/strong-path#readme>
+description:         Please see the README on GitHub at <https://github.com/wasp-lang/strong-path#readme>
 
 dependencies:
   - base >= 4.7 && < 5

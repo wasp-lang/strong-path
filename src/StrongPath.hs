@@ -160,17 +160,17 @@ relativeStrongPathWithPrefixToPathError =
 
 -- | Parsers.
 -- How parsers work:
---        Parsers              From          To
---  parseRel[Dir|File]     System/Posix    System
---  parseRel[Dir|File]W    Win/Posix       Win
---  parseRel[Dir|File]P    Posix           Posix
---  parseAbs[Dir|File]     System/Posix*   System
---  parseAbs[Dir|File]W    Win/Posix*      Win
---  parseAbs[Dir|File]P    Posix           Posix
+--       Parsers              From          To
+-- parseRel[Dir|File]     System/Posix    System
+-- parseRel[Dir|File]W    Win/Posix       Win
+-- parseRel[Dir|File]P    Posix           Posix
+-- parseAbs[Dir|File]     System/Posix*   System
+-- parseAbs[Dir|File]W    Win/Posix*      Win
+-- parseAbs[Dir|File]P    Posix           Posix
 --
---  NOTE: System/Posix* means that path has to be System with exception of separators
---        that can be Posix besides being System (but e.g. root can't be Posix).
---        Win/Posix* is analogous to System/Posix*.
+-- NOTE: * in System/Posix* / Win/Posix* means that while separators
+--   can be both System and Posix / Win and Posix, root can't be
+--   Posix, it has to instead be System / Win.
 parseRelDir   :: MonadThrow m => FilePath -> m (Path System  (Rel d1) (Dir d2))
 parseRelFile  :: MonadThrow m => FilePath -> m (Path System  (Rel d)  (File f))
 parseAbsDir   :: MonadThrow m => FilePath -> m (Path System  Abs      (Dir d))
