@@ -100,7 +100,7 @@ data File file
 ```
 
 #### Possible combinations
-This bring us to (3*2*2=12) combinations:
+This bring us to (3x2x2=12) combinations:
 ```hs
 Path [System|Posix|Windows] [Abs|(Rel r)] [(Dir d)|(File f)]
 ```
