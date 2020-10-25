@@ -134,6 +134,14 @@ type Rel'  = Rel ()
 type Dir'  = Dir ()
 type File' = File ()
 ```
+so instead of writing
+```hs
+Path System (Rel ProjectRootDir) (File ())
+```
+you can write
+```hs
+Path' (Rel ProjectRootDir) File'
+```
 
 ### Function naming
 In strong-path, you will find groups of (usually 12) functions that all do the same thing really but each one of them is specialized for specific type of path.
