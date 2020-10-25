@@ -277,3 +277,8 @@ data HomeDir
 `strong-path` is `Stack` project, so make sure you have `stack` installed on your machine.
 
 `stack build` to build the project, `stack test` to run the tests.
+
+`stack build --haddock --no-haddock-deps` to build documentation (without building it for dependencies).  
+`stack haddock --open` to open the built documentation.
+
+`stack sdist` to build publishable .tar.gz.

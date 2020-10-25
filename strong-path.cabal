@@ -4,17 +4,19 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 819c4406c2a567d2ddba9ddf59339197f5466f12b70ef7cfd22faeab209ce07a
+-- hash: 4e32ddb6e7ec4cde61c94e973a0a471cb14ad1767946775b0fb93228a8ff8447
 
 name:           strong-path
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/Martinsos/strong-path#readme>
-homepage:       https://github.com/Martinsos/strong-path#readme
-bug-reports:    https://github.com/Martinsos/strong-path/issues
+synopsis:       Strongly typed paths in Haskell.
+description:    Please see the README on GitHub at <https://github.com/wasp-lang/strong-path#readme>
+category:       System, Filesystem, FilePath
+homepage:       https://github.com/wasp-lang/strong-path#readme
+bug-reports:    https://github.com/wasp-lang/strong-path/issues
 author:         Martin Sosic
 maintainer:     sosic.martin@gmail.com
 copyright:      2020 Martin Sosic
-license:        BSD3
+license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
@@ -23,7 +25,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/Martinsos/strong-path
+  location: https://github.com/wasp-lang/strong-path
 
 library
   exposed-modules:
