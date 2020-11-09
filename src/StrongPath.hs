@@ -1,33 +1,92 @@
+-- | This library provides a strongly typed representation of file paths.
+--
+-- Basic idea is that working with 'FilePath' (which is just an alias for String
+-- and is a default type for representing file paths in Haskell) is too clumsy
+-- and can easily lead to errors in runtime, while those errors could have easily been caught
+-- in the compile time if more advanced approach for representing file paths was used.
+--
+-- This is where "StrongPath" module with its 'Path' type comes in: by encoding
+-- more information about the file path into the type (e.g. is it relative or
+-- absolute, if it is relative what is it relative to, is it file or dir), we
+-- can achieve that additional safety and catch many potential errors during compile time.
+--
+-- While you will still always start your data flow with just 'FilePath' and
+-- also end with it, the idea is to convert it into 'Path' as soon as
+-- possible and keep it like that as long as possible before eventually
+-- converting it back to 'FilePath'.
+--
+-- For example, you could convert:
+--
+--  - @\/home/\john\/Music@ from @FilePath@ into @Path System Abs (Dir MusicDir)@.
+--
+--  - @john\/.gitconfig@ from @FilePath@ into @Path System (Rel HomeDir) (File JohnsGitConfigFile)@.
+--
+--  - @..\/index.js@ as in Javascript import statement @import Stuff from \"..\/index.js\"@
+--    from @FilePath@ into @Path Posix (Rel ()) (File IndexFile)@
+--    (or smth else, there are many options).
+--
+-- Notice that you can't, for example, convert @\/foo\/bar.txt@, which is an
+-- absolute path, into @Path System Rel' File'@, because the parser function (in
+-- this case 'parseRelFile') will detect that path is absolute and not relative
+-- and throw error. Therefore, due to the checks that parser functions perform,
+-- once you get 'FilePath' converted into 'Path', you can be pretty sure that it
+-- is exactly what the type says it is.
+--
+-- Once you have your file path represented as 'Path', you can perform safe operations like
+-- `</>` (concatenation of two paths) where types really shine.
+-- Specifically, `</>` will allow you to concatenate two paths only if they use the same standard,
+-- right path is relative to the left path and the left path is a directory.
+-- If these conditions are not satisfied, the code will not compile!
+
+-- TODO: Provide more of the general information. Copy most of it from the README.
+-- TODO: We want to move everything from README here, we don't want duplication.
+
 {-# LANGUAGE PartialTypeSignatures #-}
+
 module StrongPath
-    ( Path, Abs, Rel, Dir, File
-    , System, Windows, Posix
+    (
+      -- * Types
+      -- ** Path
+      Path
+      -- *** 'Path' type
+    , Dir, File
+      -- *** 'Path' base
+    , Abs, Rel
+      -- *** 'Path' standard
+      -- $pathStandard
+    , Posix, Windows, System
+      -- *** 'Path' aliases
     , Path', Rel', Dir', File'
 
+      -- * Parsers (from 'FilePath' to 'Path')
     , parseRelDir, parseRelFile, parseAbsDir, parseAbsFile
     , parseRelDirW, parseRelFileW, parseAbsDirW, parseAbsFileW
     , parseRelDirP, parseRelFileP, parseAbsDirP, parseAbsFileP
 
-    , fromPathRelDir, fromPathRelFile, fromPathAbsDir, fromPathAbsFile
-    , fromPathRelDirW, fromPathRelFileW, fromPathAbsDirW, fromPathAbsFileW
-    , fromPathRelDirP, fromPathRelFileP, fromPathAbsDirP, fromPathAbsFileP
-
-    , toPathRelDir, toPathRelFile, toPathAbsDir, toPathAbsFile
-    , toPathRelDirW, toPathRelFileW, toPathAbsDirW, toPathAbsFileW
-    , toPathRelDirP, toPathRelFileP, toPathAbsDirP, toPathAbsFileP
-
+      -- * Conversion (from 'FilePath' to 'Path')
+    , toFilePath
     , fromRelDir, fromRelFile, fromAbsDir, fromAbsFile
     , fromRelDirP, fromRelFileP, fromAbsDirP, fromAbsFileP
     , fromRelDirW, fromRelFileW, fromAbsDirW, fromAbsFileW
 
-    , toFilePath
+      -- * Parsers (from 'Path.Path' to 'StrongPath.Path')
+    , fromPathRelDir, fromPathRelFile, fromPathAbsDir, fromPathAbsFile
+    , fromPathRelDirW, fromPathRelFileW, fromPathAbsDirW, fromPathAbsFileW
+    , fromPathRelDirP, fromPathRelFileP, fromPathAbsDirP, fromPathAbsFileP
 
+      -- * Conversion (from 'StrongPath.Path' to 'Path.Path')
+    , toPathRelDir, toPathRelFile, toPathAbsDir, toPathAbsFile
+    , toPathRelDirW, toPathRelFileW, toPathAbsDirW, toPathAbsFileW
+    , toPathRelDirP, toPathRelFileP, toPathAbsDirP, toPathAbsFileP
+
+      -- * Operations
     , (</>)
-
-    , castRel, castDir
-
     , parent
 
+      -- * Casting
+    , castRel, castDir
+
+      -- * Conversion of path standard
     , relDirToPosix, relFileToPosix, relDirToPosix', relFileToPosix'
     ) where
 
@@ -42,6 +101,12 @@ import qualified System.FilePath.Posix   as FPP
 import qualified System.FilePath.Windows as FPW
 
 import           StrongPath.Internal
+
+
+-- $pathStandard
+-- TLDR: If you are not sure which standard to use, go with 'System' since that is the most
+-- common use case, and you will likely recognize the situation in which you need
+-- system-indepenent behaviour ('Posix', 'Windows') when it happens.
 
 -- TODO: Add relDirToWindows and relFileToWindows?
 -- TODO: Implement relFile?

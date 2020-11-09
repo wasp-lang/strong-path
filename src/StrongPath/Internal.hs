@@ -7,8 +7,16 @@ import qualified Path.Windows            as PW
 import qualified System.FilePath.Posix   as FPP
 import qualified System.FilePath.Windows as FPW
 
+-- TODO: Examples in the docs!!!!
 
--- | s -> standard, b -> base, t -> type
+-- | Strongly typed file path. Central type of the  "StrongPath".
+--
+--   [@s@]: __Standard__: Posix or windows. Can be fixed ('Posix', 'Windows') or determined by the system ('System').
+--
+--   [@b@]: __Base__: Absolute ('Abs') or relative ('Rel').
+--
+--   [@t@]: __Type__: File ('File') or directory ('Dir').
+--
 data Path s b t
     -- System
     = RelDir  (P.Path P.Rel P.Dir) RelPathPrefix
@@ -31,22 +39,64 @@ data RelPathPrefix = ParentDir Int -- ^ ../, Int saying how many times it repeat
                    | NoPrefix
     deriving (Show, Eq)
 
--- | base
+-- | Describes 'Path' base as absolute.
 data Abs
+-- | Describes 'Path' base as relative to the directory @dir@.
 data Rel dir
 
--- | type
+-- | Describes 'Path' type as pointing to the directory @dir@.
+-- To use as a type in place of @dir@, we recommend creating an empty
+-- data type representing the specific directory, e.g. @data ProjectRootDir@.
 data Dir dir
+-- | Describes 'Path' type as pointing to the file @file@.
+-- To use as a type in place of @file@, we recommend creating an empty
+-- data type representing the specific file, e.g. @data ProjectManifestFile@.
 data File file
 
--- | standard
-data System -- Depends on the platform, it is either Posix or Windows.
-data Windows
+
+-- | Describes 'Path' standard as posix (e.g. @\/path\/to\/foobar@).
+-- This makes 'Path' behave in system-independent fashion: code behaves the same
+-- regardless of the system it is running on.
+-- You will normally want to use it when dealing with paths from some external source,
+-- or with paths that have explicitely fixed standard.
+-- For example, if you are running your Haskell program on Windows and parsing logs which
+-- were obtained from the Linux server, or maybe you are parsing Javascript import statements,
+-- you will want to use 'Posix'.
 data Posix
 
+-- | Describes 'Path' standard as windows (e.g. @C:\\path\\to\\foobar@).
+-- Check 'Posix' for more details, everything is analogous.
+data Windows
+
+-- | Describes 'Path' standard to be determined by the system/OS.
+--
+-- If the system is Windows, it will resolve to 'Windows' internally, and if not,
+-- it will resolve to 'Posix'.
+--
+-- However, keep in mind that even if running on Windows, @Path Windows b t@
+-- and @Path System b t@ are still considered to be different types,
+-- even though @Path System b t @ internally uses Windows standard.
+--
+-- You will normally want to use 'System' if you are dealing with the paths on the disk of the host OS
+-- (where your code is running), for example if user is providing you with the path to the file on the disk
+-- that you will be doing something with.
+-- Keep in mind that 'System' causes the behaviour of 'Path' to be system/platform-dependant:
+-- code running on our OS could cause runtime errors on another OS.
+data System -- Depends on the platform, it is either Posix or Windows.
+
+-- | 'System' is the most commonly used standard, so we provide you with a type alias for it.
 type Path' = Path System
+
+-- | When you don't want your path to be relative to anything specific,
+-- it is convenient to use unit @()@.
 type Rel' = Rel ()
+
+-- | When you don't want your directory path to be named,
+-- it is convenient to use unit @()@.
 type Dir' = Dir ()
+
+-- | When you don't want your file path to be named,
+-- it is convenient to use unit @()@.
 type File' = File ()
 
 
