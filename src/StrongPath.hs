@@ -2,7 +2,7 @@
 --
 -- Basic idea is that working with 'FilePath' (which is just an alias for String
 -- and is a default type for representing file paths in Haskell) is too clumsy
--- and can easily lead to errors in runtime, while those errors could have easily been caught
+-- and can easily lead to errors in runtime, while those errors could have been caught
 -- in the compile time if more advanced approach for representing file paths was used.
 --
 -- This is where "StrongPath" module with its 'Path' type comes in: by encoding
@@ -15,18 +15,22 @@
 -- possible and keep it like that as long as possible before eventually
 -- converting it back to 'FilePath'.
 --
--- For example, you could convert:
+-- Some examples:
 --
---  - @\/home/\john\/Music@ from @FilePath@ into @Path System Abs (Dir MusicDir)@.
+--  - If you have absolute path to directory on the disk such as @\/home/\john\/Music@,
+--    with "StrongPath" you could represent it as @Path System Abs (Dir MusicDir)@,
+--    capturing its details in the type.
 --
---  - @john\/.gitconfig@ from @FilePath@ into @Path System (Rel HomeDir) (File JohnsGitConfigFile)@.
+--  - If you have relative (to home) path to file on the disk such as @john\/.gitconfig@,
+--    you could represent it as @Path System (Rel HomeDir) (File JohnsGitConfigFile)@.
 --
---  - @..\/index.js@ as in Javascript import statement @import Stuff from \"..\/index.js\"@
---    from @FilePath@ into @Path Posix (Rel ()) (File IndexFile)@
---    (or smth else, there are many options).
+--  - If you have @..\/index.js@ path, comfing from the Javascript import statement
+--    @import Stuff from \"..\/index.js\"@, you could represent it as
+--    @Path Posix (Rel ()) (File IndexFile)@ (or smth else, there are many options).
 --
--- Notice that you can't, for example, convert @\/foo\/bar.txt@, which is an
--- absolute path, into @Path System Rel' File'@, because the parser function (in
+--
+-- Notice that you can't, for example, represent @\/foo\/bar.txt@, which is an
+-- absolute path, as @Path System Rel' File'@, because the parser function (in
 -- this case 'parseRelFile') will detect that path is absolute and not relative
 -- and throw error. Therefore, due to the checks that parser functions perform,
 -- once you get 'FilePath' converted into 'Path', you can be pretty sure that it
@@ -37,9 +41,62 @@
 -- Specifically, `</>` will allow you to concatenate two paths only if they use the same standard,
 -- right path is relative to the left path and the left path is a directory.
 -- If these conditions are not satisfied, the code will not compile!
-
--- TODO: Provide more of the general information. Copy most of it from the README.
--- TODO: We want to move everything from README here, we don't want duplication.
+--
+-- = Function naming
+-- In "StrongPath" you will find groups of (usually 12) functions that all do the same thing really
+-- but each one of them is specialized for specific type of path.
+--
+-- In such case, we usually name them via following scheme: @\<function_name_prefix\>\<base\>\<type\>\<standard\>@, where
+--
+--  - @\<base\>@ can be @Rel@ or @Abs@.
+--  - @\<type\>@ can be @File@ or @Dir@.
+--  - @\<standard\>@ can be @P@ (Posix), @W@ (Windows) or nothing (System).
+--
+-- This results in 12 functions, for all 12 combinations of path type.
+--
+-- For example, from their name, we can say for the following functions that:
+--
+--  - @parseAbsFile@ does something with @Path System Abs (File f)@
+--  - @parseRelFileP@ does something with @Path Posix (Rel r) (File f)@
+--  - @parseRelDirW@ does something with @Path Windows (Rel r) (Dir d)@
+--
+-- = Examples
+--
+-- > -- System path to "foo" directory, relative to "bar" directory.
+-- > dirFooInDirBar :: Path System (Rel BarDir) (Dir FooDir)
+-- > dirFooInDirBar = fromJust $ fromRelDir "somedir/foo/"
+-- >
+-- > -- Abs system path to "bar" directory.
+-- > dirBarAbsPath :: Path System Abs (Dir BarDir)
+-- > dirBarAbsPath = fromJust $ fromAbsDir "/bar/"
+-- >
+-- > -- Abs path to "foo" directory.
+-- > dirFooAbsPath :: Path System Abs (Dir FooDir)
+-- > dirFooAbsPath = dirBarAbsPath </> dirFooInDirBar
+-- >
+-- > -- Posix path to "unnamed" file, relative to "foo" directory.
+-- > someFile :: Path Posix (Rel FooDir) File ()
+-- > someFile = fromJust $ fromRelFile "some/file.txt"
+-- >
+-- > dirHome :: Path System Abs (Dir HomeDir)
+-- > dirHome :: fromJust $ fromAbsDir "/home/john/"
+-- >
+-- > dirFooCopiedToHomeAsInBar :: Path System Abs (Dir FooDir)
+-- > dirFooCopiedToHomeAsInBar = dirHome </> castRel dirFooInDirBar
+-- >
+-- > data BarDir  -- Represents Bar directory.
+-- > data FooDir  -- Represents Foo directory.
+-- > data HomeDir -- Represents Home directory.
+--
+-- = Inspiration
+-- This library is greatly inspired by [path library](https://github.com/commercialhaskell/path)
+-- and is really a layer on top of it, replicating most of its API and using it for implementation
+-- details, while also adding to it, with main additions being:
+--
+-- - Differentiation between path standards (system, posix and windows) at type level, they can't be accidentally mixed.
+-- - \"Naming\" of directories and files at type level.
+-- - Support at type level for describing what are relative paths exactly relative to,
+--   so you e.g. can't concatenate wrong paths.
 
 {-# LANGUAGE PartialTypeSignatures #-}
 
@@ -59,22 +116,24 @@ module StrongPath
     , Path', Rel', Dir', File'
 
       -- * Parsers (from 'FilePath' to 'Path')
+      -- $parsersFilepath
     , parseRelDir, parseRelFile, parseAbsDir, parseAbsFile
     , parseRelDirW, parseRelFileW, parseAbsDirW, parseAbsFileW
     , parseRelDirP, parseRelFileP, parseAbsDirP, parseAbsFileP
 
-      -- * Conversion (from 'FilePath' to 'Path')
+      -- * Conversion (from 'Path' to 'FilePath')
+      -- $conversionFilepath
     , toFilePath
     , fromRelDir, fromRelFile, fromAbsDir, fromAbsFile
     , fromRelDirP, fromRelFileP, fromAbsDirP, fromAbsFileP
     , fromRelDirW, fromRelFileW, fromAbsDirW, fromAbsFileW
 
-      -- * Parsers (from 'Path.Path' to 'StrongPath.Path')
+      -- * Parsers (from "Path".'Path.Path' to 'StrongPath.Path')
     , fromPathRelDir, fromPathRelFile, fromPathAbsDir, fromPathAbsFile
     , fromPathRelDirW, fromPathRelFileW, fromPathAbsDirW, fromPathAbsFileW
     , fromPathRelDirP, fromPathRelFileP, fromPathAbsDirP, fromPathAbsFileP
 
-      -- * Conversion (from 'StrongPath.Path' to 'Path.Path')
+      -- * Conversion (from 'StrongPath.Path' to "Path".'Path.Path')
     , toPathRelDir, toPathRelFile, toPathAbsDir, toPathAbsFile
     , toPathRelDirW, toPathRelFileW, toPathAbsDirW, toPathAbsFileW
     , toPathRelDirP, toPathRelFileP, toPathAbsDirP, toPathAbsFileP
@@ -87,12 +146,11 @@ module StrongPath
     , castRel, castDir
 
       -- * Conversion of path standard
-    , relDirToPosix, relFileToPosix, relDirToPosix', relFileToPosix'
+    , relDirToPosix, relFileToPosix
     ) where
 
 import           Control.Monad.Catch     (MonadThrow)
 import           Data.List               (intercalate)
-import           Data.Maybe              (fromJust)
 import qualified Path                    as P
 import qualified Path.Posix              as PP
 import qualified Path.Windows            as PW
@@ -223,19 +281,53 @@ relativeStrongPathWithPrefixToPathError :: a
 relativeStrongPathWithPrefixToPathError =
     error "Relative StrongPath.Path with prefix can't be converted into Path.Path."
 
--- | Parsers.
--- How parsers work:
---       Parsers              From          To
--- parseRel[Dir|File]     System/Posix    System
--- parseRel[Dir|File]W    Win/Posix       Win
--- parseRel[Dir|File]P    Posix           Posix
--- parseAbs[Dir|File]     System/Posix*   System
--- parseAbs[Dir|File]W    Win/Posix*      Win
--- parseAbs[Dir|File]P    Posix           Posix
+
+-- $parsersFilepath
+-- Path can be constructed from `FilePath`:
 --
--- NOTE: * in System/Posix* / Win/Posix* means that while separators
---   can be both System and Posix / Win and Posix, root can't be
---   Posix, it has to instead be System / Win.
+-- > parse<base><type><standard> :: MonadThrow m => FilePath -> m (<corresponding_path_type>)
+--
+-- There are 12 parser functions, each of them parsing 'FilePath' into a specific 'Path'
+-- type.
+-- All of them work in the same fashion and will throw an error (via 'MonadThrow')
+-- if given 'FilePath' can't be parsed into the specific 'Path' type.
+-- For example, if path is absolute, 'parseRelDir' will throw an error.
+--
+-- Not all parsers accept all types of separators, for example
+-- 'parseRelDirP' parser will fail to parse paths using Windows separators,
+-- while 'parseRelDirW' will accept both Windows and Posix separators.
+--
+-- Below is a table describing, for all the parser functions,
+-- which path standard (separators) do they accept as input
+-- and to what path standard they parse it.
+--
+-- +---------------------------+-----------------+----------+
+-- |          Parsers          |      From       |    To    |
+-- +===========================+=================+==========+
+-- | parse[Abs|Rel][Dir|File]  |  System/Posix   |  System  |
+-- +---------------------------+-----------------+----------+
+-- | parse[Abs|Rel][Dir|File]W |  Win/Posix      |   Win    |
+-- +---------------------------+-----------------+----------+
+-- | parse[Abs|Rel][Dir|File]P |   Posix         |  Posix   |
+-- +---------------------------+-----------------+----------+
+--
+-- NOTE: Root of @parseAbs...@ input always has to match its path standard!
+--   e.g., 'parseAbsDirW' can parse @\"C:\\foo\/bar\"@ but it can't parse @\"\/foo\/bar\"@.
+--
+-- Examples:
+--
+--  - @parseAbsFile \"C:\\foo\\bar.txt\"@ is valid if system is Windows, and gives the same result as @parseAbsFile \"C:\\foo\/bar.txt\"@.
+--    On the other hand, both are invalid if system is Linux.
+--  - @parseRelFile \"foo\/bar.txt\"@ is valid independent of the system.
+--  - @parseRelFile \"foo\\bar.txt\"@ is valid only if system is Windows.
+--  - @parseRelDirW \"foo\\bar\\test\"@ is valid, independent of the system, and gives the same result as @parseRelDirW \"foo\\bar\/test\"@ or @parseRelDirW "foo\/bar\/test\"@.
+--
+-- Basically, all of the parsers accept their \"native\" standard AND Posix,
+-- which enables you to hardcode paths as Posix in the code that will compile
+-- and work both on Linux and Windows when using `System` as a standard.
+-- So Posix becames a kind of \"universal\" language for hardcoding the paths.
+--
+
 parseRelDir   :: MonadThrow m => FilePath -> m (Path System  (Rel d1) (Dir d2))
 parseRelFile  :: MonadThrow m => FilePath -> m (Path System  (Rel d)  (File f))
 parseAbsDir   :: MonadThrow m => FilePath -> m (Path System  Abs      (Dir d))
@@ -264,6 +356,13 @@ parseRelFileP = parseRelFP RelFileP [FPP.pathSeparator] PP.parseRelFile
 parseAbsDirP fp = fromPathAbsDirP <$> PP.parseAbsDir fp
 parseAbsFileP fp = fromPathAbsFileP <$> PP.parseAbsFile fp
 
+-- $conversionFilepath
+-- 'Path' can be converted into 'FilePath' via polymorphic function 'toFilePath'
+-- or via any of the 12 functions that accept specific path type.
+--
+-- We recommend using specific functions instead of 'toFilePath',
+-- because that way you are explicit about which path you expect
+-- and if that expectancy is not met, type system will catch it.
 
 toFilePath :: Path s b t -> FilePath
 toFilePath sp = case sp of
@@ -328,8 +427,13 @@ fromAbsDirW  = toFilePath
 fromAbsFileW :: Path Windows Abs     (File f) -> FilePath
 fromAbsFileW = toFilePath
 
--- | Either removes last entry or if there are no entries and just "../"s, adds one more "../".
---   If path is absolute root and it has no parent, it will return unchanged path, same like Path.
+-- | Gets parent dir of the path.
+--
+-- Either removes last entry in the path or if there are no entries and just @\"..\/\"@s, adds one more @\"..\/\"@.
+--
+-- If path is absolute root and it has no parent, it will return unchanged path.
+--
+-- TODO: Examples (pseudocode).
 parent :: Path s b t -> Path s b (Dir d)
 parent path = case path of
     ---- System
@@ -362,17 +466,26 @@ parent path = case path of
         else let p' = pathParent p
              in constructor p' prefix
 
-
--- | How "../"s are resolved:
---   For each "../" at the start of the right hand path, one most right entry is removed
+-- | Concatenates two paths, same as "FilePath".'FilePath.</>', but only if the second path is relative
+-- to the directory that first path leads to, and if both paths use the same path standard.
+--
+-- How @\"..\/\"@s are resolved (examples are pseudocode):
+--
+-- - For each @\"..\/\"@ at the start of the right hand path, one most right entry is removed
 --   from the left hand path.
---     Example: "a/b" </> "../c" = "a/c"
---   If left path is absolute and right path has too many "../"s, they go "over" the root
+--
+-- > "a/b" </> "../c" == "a/c"
+--
+-- - If left path is absolute and right path has too many @"..\/"@s, they go \"over\" the root
 --   and are effectively ignored.
---     Example: "/a/b" </> "../../../c" = "/c"
---   If left path is relative and right path has more "../"s then left has entries,
---   the leftover "../"s are carried over.
---     Example: "a/b" </> "../../../c" = "../c"
+--
+-- > "/a/b" </> "../../../../../c" == "/c"
+--
+-- - If left path is relative and right path has more @\"..\/\"@s then left has entries,
+--   the leftover @\"..\/\"@s are carried over.
+--
+-- > "a/b" </> "../../../../../c" == "../../../c"
+--
 (</>) :: Path s b (Dir d) -> Path s (Rel d) t -> Path s b t
 ---- System
 lsp@(RelDir _ _) </> (RelFile rp rprefix) =
@@ -415,7 +528,7 @@ lsp@(AbsDirP _) </> (RelDirP rp rprefix) =
     in AbsDirP (lp' `pathPosixCombineAbsDirAndRelDir` rp)
 _ </> _ = impossible
 
-
+-- | Enables you to redefine which dir is the path relative to.
 castRel :: Path s (Rel d1) a -> Path s (Rel d2) a
 ---- System
 castRel (RelDir p pr)   = RelDir p pr
@@ -428,6 +541,7 @@ castRel (RelDirP p pr)  = RelDirP p pr
 castRel (RelFileP p pr) = RelFileP p pr
 castRel _               = impossible
 
+-- | Enables you to rename the dir.
 castDir :: Path s a (Dir d1) -> Path s a (Dir d2)
 ---- System
 castDir (AbsDir p)     = AbsDir p
@@ -444,24 +558,23 @@ castDir _              = impossible
 --   because Haskell did not believe me that I would be returning same "t" (Dir/File) in Path
 --   as was in first argument. I wonder if there is easy way to go around that or if
 --   we have to redo significant part of the StrongPath to be able to do smth like this.
--- | Converts relative path to posix by replacing current path separators with posix path separators.
---   Works well for "normal" relative paths like "a\b\c" (Win) or "a/b/c" (Posix).
---   If path is weird but still considered relative, like just "C:" on Win,
---   results can be unxpected, most likely resulting with error thrown.
---   If path is already Posix, it will not change.
+
+-- | Converts relative dir path to posix by replacing current path separators with posix path separators.
+-- If path is already posix, it will not change.
+--
+-- Works well for \"normal\" relative paths like @\"a\\b\\c\"@ (Win) or @\"a\/b\/c\"@ (Posix).
+-- If path is weird but still considered relative, like just @\"C:\"@ on Win,
+-- results can be unexpected, most likely resulting with error thrown.
 relDirToPosix :: MonadThrow m => Path s (Rel d1) (Dir d2) -> m (Path Posix (Rel d1) (Dir d2))
 relDirToPosix sp@(RelDir _ _)  = parseRelDirP $ FPP.joinPath $ FP.splitDirectories $ toFilePath sp
 relDirToPosix sp@(RelDirW _ _) = parseRelDirP $ FPP.joinPath $ FPW.splitDirectories $ toFilePath sp
 relDirToPosix (RelDirP p pr)   = return $ RelDirP p pr
 relDirToPosix _                = impossible
+
+-- | Converts relative file path to posix, if it is not already posix.
+-- Check 'relDirToPosix' for more details, they behave the same.
 relFileToPosix :: MonadThrow m => Path s (Rel d1) (File f) -> m (Path Posix (Rel d1) (File f))
 relFileToPosix sp@(RelFile _ _)  = parseRelFileP $ FPP.joinPath $ FP.splitDirectories $ toFilePath sp
 relFileToPosix sp@(RelFileW _ _) = parseRelFileP $ FPP.joinPath $ FPW.splitDirectories $ toFilePath sp
 relFileToPosix (RelFileP p pr)   = return $ RelFileP p pr
 relFileToPosix _                 = impossible
--- TODO: Should I name these unsafe versions differently? Maybe relDirToPosixU?
--- Unsafe versions:
-relDirToPosix' :: Path s (Rel d1) (Dir d2) -> Path Posix (Rel d1) (Dir d2)
-relDirToPosix' = fromJust . relDirToPosix
-relFileToPosix' :: Path s (Rel d1) (File f) -> Path Posix (Rel d1) (File f)
-relFileToPosix' = fromJust . relFileToPosix
