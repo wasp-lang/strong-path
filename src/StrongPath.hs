@@ -1,5 +1,11 @@
 -- | This library provides a strongly typed representation of file paths.
 --
+-- Example of using "System.FilePath" vs using "StrongPath":
+--
+-- > getGitConfigPath :: IO FilePath
+--
+-- > getGitConfigPath :: IO (Path System (Rel HomeDir) (File GitConfigFile))
+--
 -- Basic idea is that working with 'FilePath' (which is just an alias for String
 -- and is a default type for representing file paths in Haskell) is too clumsy
 -- and can easily lead to errors in runtime, while those errors could have been caught
@@ -8,12 +14,8 @@
 -- This is where "StrongPath" module with its 'Path' type comes in: by encoding
 -- more information about the file path into the type (e.g. is it relative or
 -- absolute, if it is relative what is it relative to, is it file or dir), we
--- can achieve that additional safety and catch many potential errors during compile time.
---
--- While you will still always start your data flow with just 'FilePath' and
--- also end with it, the idea is to convert it into 'Path' as soon as
--- possible and keep it like that as long as possible before eventually
--- converting it back to 'FilePath'.
+-- can achieve that additional safety and catch many potential errors during compile time,
+-- while also making code more readable.
 --
 -- Some examples:
 --
@@ -62,6 +64,104 @@
 --
 -- = Examples
 --
+-- == Typical import
+--
+-- > import StrongPath (Path, System, Abs, Rel, File, Dir, (</>))
+-- > import qualified StrongPath as SP
+--
+-- == Absolute path to home dir
+--
+-- Let's say that you want to ask user for absolute path to their home directory.
+-- With "StrongPath", you could do it like this:
+--
+-- > data HomeDir
+-- >
+-- > getHomeDirPath :: IO (Path System Abs (Dir HomeDir))
+-- > getHomeDirPath = getLine >>= fromJust . SP.parseAbsDir
+--
+-- Notice how you captured all the important information in type, plus
+-- you ensure it is indeed valid path by parsing it (with 'parseAbsDir')!
+--
+-- For the simplicity we didn't handle error properly and just used 'fromJust',
+-- but normally you would probably want to do something more fancy.
+--
+-- == Relative path to .gitconfig
+--
+-- Next, let's write a function that asks user for a relative path to .gitconfig file in their home directory.
+--
+-- > data UserGitConfig
+-- >
+-- > getUserGitConfigPath :: IO (Path System (Rel HomeDir) (File UserGitConfig))
+-- > getUserGitConfigPath = getLine >>= fromJust . SP.parseRelFile
+--
+-- == Absolute path to .gitconfig
+--
+-- If user inputed both abs path to home dir and rel path to .gitconfig, we can
+-- compute abs path to .gitconfig:
+--
+-- > absHomeDirPath <- getHomeDirPath
+-- > relGitConfigPath <- getUserGitConfigPath
+-- > let absGitConfigPath = absHomeDirPath </> relGitConfigPath
+--
+-- Cool thing here is that you can be sure that @absGitConfigPath@ makes sense, because '</>' would not allow
+-- you (at compile time) to concatenate @relGitConfigPath@ with anything else than path to home dir, since it knows
+-- that is what it is relative to!
+--
+-- == Copying .gitconfig
+--
+-- Let's say that for some reason, we want to copy this .gitconfig to home dir of another user,
+-- and we want it to have the same relative position in that home dir as it has in the current home dir.
+--
+-- Let's assume we already have
+--
+-- > anotherHomeDir :: IO (Path System Abs (Dir AnotherHomeDir))
+--
+-- then we can do smth like this:
+--
+-- > let absAnotherGitConfigPath = anotherHomeDir </> (SP.castRel relGitConfigPath)
+--
+-- We used 'castRel' to "loosen up" @relGitConfigPath@'s type, so it does not require to be relative
+-- to @HomeDir@ and instead accepts @AnotherHomeDir@.
+--
+-- Similar to 'castRel', there are also 'castFile' and 'castDir'.
+--
+-- Now we could do the copying like this:
+--
+-- > copyFile (fromAbsFile absGitConfigPath) (fromAbsFile absAnotherGitConfigPath)
+--
+-- Notice that while converting 'Path' to 'FilePath', we could have used 'toFilePath' instead of
+-- 'fromAbsFile', but 'fromAbsFile' gives us more type safety by demanding given strong path to be
+-- of specific type (absolute file). For example, if somehow variable @absGitConfigPath@ got to be of type
+-- @Path System (Rel ()) (Dir ())@, 'fromAbsFile' would cause compile time error, while 'toFilePath'
+-- would just happily go on.
+--
+-- == Extracting @from@ path from a JS import statement.
+--
+-- What if we wanted to extract @from@ path from a Javascript import statement and return it as a strong path?
+--
+-- Example of Javascript import statement:
+--
+-- > import Bar from "../foo/bar"  // We want to extract "../foo/bar" path.
+--
+-- Let's assume that we know that this statement is relative to some @ProjectDir@ (because that is where the
+-- JS file we got the statement from is located), but we don't know upfront the name of the file being imported.
+--
+-- Such function could have the following signature:
+--
+-- > parseJsImportFrom :: String -> Maybe (Path Posix (Rel (ProjectDir)) (File ()))
+--
+-- Notice how we used 'Posix' to specify that the path is following posix standard
+-- no matter on which OS we are running this code, while in examples above we
+-- used 'System', which meant paths follow whatever is the standard of the OS we are running on.
+--
+-- Next, also notice how we used @File ()@ to specify that file is \"unnamed\".
+-- While you could use some other approach to specify this, we found this to be convenient way to do it.
+-- That is why we also introduce @File\'@ and @Dir\'@ aliases, to make this even simpler.
+--
+-- TODO: Converting hardcoded string into StrongPath.
+--
+-- == Some more examples
+--
 -- > -- System path to "foo" directory, relative to "bar" directory.
 -- > dirFooInDirBar :: Path System (Rel BarDir) (Dir FooDir)
 -- > dirFooInDirBar = fromJust $ fromRelDir "somedir/foo/"
@@ -97,6 +197,7 @@
 -- - \"Naming\" of directories and files at type level.
 -- - Support at type level for describing what are relative paths exactly relative to,
 --   so you e.g. can't concatenate wrong paths.
+-- - Support for @..\/@ at start of relative path.
 
 {-# LANGUAGE PartialTypeSignatures #-}
 
@@ -143,7 +244,7 @@ module StrongPath
     , parent
 
       -- * Casting
-    , castRel, castDir
+    , castRel, castDir, castFile
 
       -- * Conversion of path standard
     , relDirToPosix, relFileToPosix
@@ -165,6 +266,8 @@ import           StrongPath.Internal
 -- TLDR: If you are not sure which standard to use, go with 'System' since that is the most
 -- common use case, and you will likely recognize the situation in which you need
 -- system-indepenent behaviour ('Posix', 'Windows') when it happens.
+
+-- TODO: Document about ../ + examples.
 
 -- TODO: Add relDirToWindows and relFileToWindows?
 -- TODO: Implement relFile?
@@ -553,6 +656,19 @@ castDir (RelDirW p pr) = RelDirW p pr
 castDir (AbsDirP p)    = AbsDirP p
 castDir (RelDirP p pr) = RelDirP p pr
 castDir _              = impossible
+
+-- | Enables you to rename the file.
+castFile :: Path s a (File f1) -> Path s a (File f2)
+---- System
+castFile (AbsFile p)     = AbsFile p
+castFile (RelFile p pr)  = RelFile p pr
+---- Windows
+castFile (AbsFileW p)    = AbsFileW p
+castFile (RelFileW p pr) = RelFileW p pr
+---- Posix
+castFile (AbsFileP p)    = AbsFileP p
+castFile (RelFileP p pr) = RelFileP p pr
+castFile _               = impossible
 
 -- TODO: I was not able to unite these two functions (`relDirToPosix` and `relFileToPosix`) into just `toPosix``
 --   because Haskell did not believe me that I would be returning same "t" (Dir/File) in Path
