@@ -172,7 +172,7 @@
 -- While you could use some other approach to specify this, we found this to be convenient way to do it.
 -- That is why we also introduce @File\'@ and @Dir\'@ aliases, to make this even simpler.
 --
--- == Defining a path via string literal
+-- == Defining a path via string literal during compile time
 --
 -- Let's say we want to define default file path from user's home directory to user's VLC config directory, and we already know it while writing our program.
 -- With "StrongPath", we could do it like this:
@@ -187,6 +187,16 @@
 -- and we need QuasiQuotes language extension.
 --
 -- In the future, "StrongPath" will be able to directly do this, without you needing to additionally import "Path" library, but we haven't implemented this yet.
+--
+-- == Paths starting with "../"
+--
+-- Relative paths in "StrongPath" can start with one or multiple "../".
+-- "../" is taken into account and appropriately managed when performing operations on paths.
+--
+-- > someRelPath :: Path System (Rel SomeDir) (File SomeFle)
+-- > someRelPath = parseRelFile "../foo/myfile.txt"
+--
+-- > Currently relative files that start with "../" can't be constructed from string literals in compile time, but support for that will be added in the future.
 --
 -- == Some more examples
 --
