@@ -27,9 +27,9 @@ library:
   ghc-options:
     - -Wall
   dependencies:
-    - path
-    - exceptions
-    - filepath
+    - path == 0.7.*
+    - exceptions == 0.10.*
+    - filepath == 1.4.*
 
 tests:
   strong-path-test:
@@ -41,9 +41,9 @@ tests:
       - -with-rtsopts=-N
     dependencies:
       - strong-path
-      - tasty
-      - tasty-hspec
-      - tasty-quickcheck
-      - tasty-discover
+      - tasty == 1.2.*
+      - tasty-hspec == 1.1.*
+      - tasty-quickcheck == 0.10.*
+      - tasty-discover == 4.2.*
       - path
       - filepath

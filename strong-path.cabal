@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4e32ddb6e7ec4cde61c94e973a0a471cb14ad1767946775b0fb93228a8ff8447
+-- hash: f5b564ecc00f3b2be44a84b11e58dcccd1a4903b9dd43e507bf00779cf510445
 
 name:           strong-path
 version:        0.1.0.0
@@ -38,9 +38,9 @@ library
   ghc-options: -Wall
   build-depends:
       base >=4.7 && <5
-    , exceptions
-    , filepath
-    , path
+    , exceptions ==0.10.*
+    , filepath ==1.4.*
+    , path ==0.7.*
   default-language: Haskell2010
 
 test-suite strong-path-test
@@ -57,8 +57,8 @@ test-suite strong-path-test
     , filepath
     , path
     , strong-path
-    , tasty
-    , tasty-discover
-    , tasty-hspec
-    , tasty-quickcheck
+    , tasty ==1.2.*
+    , tasty-discover ==4.2.*
+    , tasty-hspec ==1.1.*
+    , tasty-quickcheck ==0.10.*
   default-language: Haskell2010
