@@ -335,11 +335,27 @@ module StrongPath
     -- * Conversion of path standard
     relDirToPosix,
     relFileToPosix,
+
+    -- * QuasiQuoters
+    absdir,
+    absdirP,
+    absdirW,
+    absfile,
+    absfileP,
+    absfileW,
+    reldir,
+    reldirP,
+    reldirW,
+    relfile,
+    relfileP,
+    relfileW,
   )
 where
 
 import Control.Monad.Catch (MonadThrow)
 import Data.List (intercalate)
+import Language.Haskell.TH.Quote (QuasiQuoter (..))
+import Language.Haskell.TH.Syntax (Lift (..))
 import qualified Path as P
 import qualified Path.Posix as PP
 import qualified Path.Windows as PW
@@ -347,11 +363,6 @@ import StrongPath.Internal
 import qualified System.FilePath as FP
 import qualified System.FilePath.Posix as FPP
 import qualified System.FilePath.Windows as FPW
-
--- $pathStandard
--- TLDR: If you are not sure which standard to use, go with 'System' since that is the most
--- common use case, and you will likely recognize the situation in which you need
--- system-indepenent behaviour ('Posix', 'Windows') when it happens.
 
 -- TODO: Add relDirToWindows and relFileToWindows?
 -- TODO: Implement relFile?
@@ -365,6 +376,13 @@ import qualified System.FilePath.Windows as FPW
 -- And then fromPathRelDir has polymorhic return type based on standard? I tried a little bit but it is complicated.
 
 -- TODO: If there is no other solution to all this duplication, do some template haskell magic to simplify it.
+
+-- TODO: Extract "Path" parsers and converters into separate StrongPath.Path module, since we don't need them always any more.
+
+-- $pathStandard
+-- TLDR: If you are not sure which standard to use, go with 'System' since that is the most
+-- common use case, and you will likely recognize the situation in which you need
+-- system-indepenent behaviour ('Posix', 'Windows') when it happens.
 
 -- $parsersPath
 -- Functions for parsing "Path" paths into "StrongPath" paths.
@@ -834,3 +852,43 @@ relFileToPosix sp@(RelFile _ _) = parseRelFileP $ FPP.joinPath $ FP.splitDirecto
 relFileToPosix sp@(RelFileW _ _) = parseRelFileP $ FPP.joinPath $ FPW.splitDirectories $ toFilePath sp
 relFileToPosix (RelFileP p pr) = return $ RelFileP p pr
 relFileToPosix _ = impossible
+
+-- QuasiQuoters
+-- TODO: Split these into a separate module, StrongPath.QuasiQuoters, that will be reexported from this module.
+--   This will also need extraction of some other parts of this module, in order to avoid cyclic imports.
+-- TODO: Write haddock docs for quasi quoters.
+-- TODO: Write tests.
+
+qq ::
+  (Lift p, Show err) =>
+  (String -> Either err p) ->
+  QuasiQuoter
+qq parse =
+  QuasiQuoter
+    { quoteExp = either (error . show) lift . parse,
+      quotePat = err "pattern",
+      quoteType = err "type",
+      quoteDec = err "declaration"
+    }
+  where
+    err what x = fail ("unexpected " ++ what ++ ", must be expression: " ++ x)
+
+absdir, absdirP, absdirW :: QuasiQuoter
+absdir = qq parseAbsDir
+absdirP = qq parseAbsDirP
+absdirW = qq parseAbsDirW
+
+absfile, absfileP, absfileW :: QuasiQuoter
+absfile = qq parseAbsFile
+absfileP = qq parseAbsFileP
+absfileW = qq parseAbsFileW
+
+reldir, reldirP, reldirW :: QuasiQuoter
+reldir = qq parseRelDir
+reldirP = qq parseRelDirP
+reldirW = qq parseRelDirW
+
+relfile, relfileP, relfileW :: QuasiQuoter
+relfile = qq parseRelFile
+relfileP = qq parseRelFileP
+relfileW = qq parseRelFileW
