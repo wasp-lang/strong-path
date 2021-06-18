@@ -7,7 +7,7 @@ import qualified Path.Windows as PW
 import qualified System.FilePath.Posix as FPP
 import qualified System.FilePath.Windows as FPW
 
--- | Strongly typed file path. Central type of the  "StrongPath".
+-- | Strongly typed file path. Central type of the "StrongPath".
 --
 --   [@s@]: __Standard__: Posix or windows. Can be fixed ('Posix', 'Windows') or determined by the system ('System').
 --
