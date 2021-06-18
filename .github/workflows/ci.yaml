@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push: { branches: [master] }
+  pull_request: { branches: [master] }
+  create: { tags: [v*] }
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  cancel:
+    name: Cancel redundant actions already in progress
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel actions in progress of same workflow and same branch
+        uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ github.token }}
+
+  # Check that Haskell code is formatted.
+  code-formatter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mrkkrp/ormolu-action@v2
+
+  build:
+    name: Build StrongPath
+    runs-on: ${{ matrix.os }}
+    needs: code-formatter
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+
+      - name: Cache (Unix)
+        uses: actions/cache@v2
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        with:
+          path: |
+            # TODO: To reduce the cache size significantly, we might want to look into ensuring that
+            #  GHC is not cached, since it is big and can be installed in couple of minutes.
+            #  To do that, we will probably want to cache only ~/.stack/snapshots.
+            ~/.stack
+          # TODO: Right now, actions/cache updates cache only if cache was not fetched.
+          #   This is not ideal for us, because we would ideally update cache even if it
+          #   was fetched, because we want to cache any newly installed packages.
+          #   This was working normally on Travis and Appveyor.
+          #   There is an issue for this, and for now we are using proposed "fix" from it,
+          #   https://github.com/actions/cache/issues/342#issuecomment-673371329,
+          #   which mitigates the problem by creating new cache for each job and then using
+          #   the feature of restore-keys which makes sure that next cache picked is the
+          #   latest one. However, this keeps creating new cache each time which is not
+          #   ideal because caches keep getting evicted, so for example if Win job
+          #   fails multiple times while others don't, its cache will likely get evicted,
+          #   making it even slower to test and fix (uffff).
+          #   When they fix this, we should remove ${{ github.run_id }} from the end of the key
+          #   and also remove restore-keys.
+          key: haskell-${{ runner.os }}-${{ hashFiles('stack.yaml') }}-${{ github.run_id }}
+          restore-keys: |
+            haskell-${{ runner.os }}-${{ hashFiles('stack.yaml') }}-
+      - name: Cache (Windows)
+        uses: actions/cache@v2
+        if: runner.os == 'Windows'
+        with:
+          # C\:sr is where stack installs compiled dependencies.
+          # Caching this path reduces build time by 20 minutes while occupying only ~50mbs of cache space.
+          # To shave off 3 more minutes, we could add C:\Users\runneradmin\AppData\Local\Programs\stack
+          # to the cache -> this is where stack installs GHC. However, this adds ~900mb to the cache size!
+          path: |
+            C:\sr
+          # TODO: Check TODO in caching for Unix above.
+          key: haskell-${{ runner.os }}-${{ hashFiles('stack.yaml') }}-${{ github.run_id }}
+          restore-keys: |
+            haskell-${{ runner.os }}-${{ hashFiles('stack.yaml') }}-
+      # TODO: Remove this step once https://github.com/actions/cache/issues/445 is resolved.
+      - name: Fix MacOS problem with corrupt cached executable
+        if: runner.os == 'macOS'
+        run: rm -rf ~/.stack/setup-exe-cache
+
+      - name: Set up Haskell (Stack)
+        uses: haskell/actions/setup@v1
+        with:
+          ghc-version: latest
+          enable-stack: true
+          stack-version: latest
+
+      - name: Verify Haskell setup
+        run: |
+          stack --numeric-version
+          stack path --stack-root
+          ghc --version
+          
+      - name: Build dependencies 
+        run: stack --install-ghc test --only-dependencies
+      
+      - name: Build StrongPath & Run tests
+        run: stack test
+
+      - name: Build docs
+        run: stack haddock
+
+      - name: Create distribution
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest'
+        run: stack sdist
+
+      # TODO: Make releasing work!
+      #   What do I want to put in release? Probably generated Haddock docs, and maybe generated sdist?
+      #   How do I do that? I know I can find path to sdist with `stack path --dist-dir`, but I am not sure
+      #   how do I figure out path to generate Haddock documentation.
+      #   Figure this all out properly, see what other Haskell libraries include in their releases.
+      # - name: Create Github release
+      #   uses: ncipollo/release-action@v1
+      #   if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest'
+      #   with:
+      #     draft: true
+      #     allowUpdates: true
+      #     artifacts: "artifacts/*"
+      #     artifactErrorsFailBuild: true
+      #     replacesArtifacts: true
+      #     token: ${{ secrets.GITHUB_TOKEN }}
