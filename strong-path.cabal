@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4e32ddb6e7ec4cde61c94e973a0a471cb14ad1767946775b0fb93228a8ff8447
+-- hash: 479636ea881f78a2bb8de38a260dc2c9674c7edfda5dedffb3c5ba23128751bd
 
 name:           strong-path
 version:        0.1.0.0
@@ -30,6 +30,7 @@ source-repository head
 library
   exposed-modules:
       StrongPath
+      StrongPathQQ
       StrongPath.Internal
   other-modules:
       Paths_strong_path
@@ -41,6 +42,7 @@ library
     , exceptions
     , filepath
     , path
+    , template-haskell
   default-language: Haskell2010
 
 test-suite strong-path-test

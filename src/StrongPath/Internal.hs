@@ -1,11 +1,14 @@
+{-# LANGUAGE DeriveLift #-}
+
 module StrongPath.Internal where
 
-import           Control.Monad.Catch     (MonadThrow)
-import qualified Path                    as P
-import qualified Path.Posix              as PP
-import qualified Path.Windows            as PW
-import qualified System.FilePath.Posix   as FPP
-import qualified System.FilePath.Windows as FPW
+import           Control.Monad.Catch        (MonadThrow)
+import           Language.Haskell.TH.Syntax (Lift)
+import qualified Path                       as P
+import qualified Path.Posix                 as PP
+import qualified Path.Windows               as PW
+import qualified System.FilePath.Posix      as FPP
+import qualified System.FilePath.Windows    as FPW
 
 
 -- | s -> standard, b -> base, t -> type
@@ -25,24 +28,25 @@ data Path s b t
     | RelFileP (PP.Path PP.Rel PP.File) RelPathPrefix
     | AbsDirP  (PP.Path PP.Abs PP.Dir)
     | AbsFileP (PP.Path PP.Abs PP.File)
-    deriving (Show, Eq)
+    deriving (Show, Eq, Lift)
 
 data RelPathPrefix = ParentDir Int -- ^ ../, Int saying how many times it repeats.
                    | NoPrefix
-    deriving (Show, Eq)
+    deriving (Show, Eq, Lift)
 
 -- | base
-data Abs
-data Rel dir
+data Abs deriving Lift
+data Rel dir deriving Lift
 
 -- | type
-data Dir dir
-data File file
+data Dir dir deriving Lift
+data File file deriving Lift
 
 -- | standard
 data System -- Depends on the platform, it is either Posix or Windows.
-data Windows
-data Posix
+  deriving Lift
+data Windows deriving Lift
+data Posix deriving Lift
 
 type Path' = Path System
 type Rel' = Rel ()

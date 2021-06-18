@@ -30,6 +30,7 @@ library:
     - path
     - exceptions
     - filepath
+    - template-haskell
 
 tests:
   strong-path-test:
