@@ -1,6 +1,6 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 
--- | This library provides a strongly typed representation of file paths, providing more safety during compile time while also making code more readable, compared to standard solution ("System.FilePath").
+-- | This library provides a strongly typed representation of file paths, providing more safety during compile time while also making code more readable, compared to the standard solution ("System.FilePath").
 --
 -- Example of using "System.FilePath" vs using "StrongPath" to describe the path to git config file (relative to the home directory):
 --

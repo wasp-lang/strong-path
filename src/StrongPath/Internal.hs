@@ -1,13 +1,11 @@
 module StrongPath.Internal where
 
-import Control.Monad.Catch (MonadThrow, onException)
+import Control.Monad.Catch (MonadThrow)
 import qualified Path as P
 import qualified Path.Posix as PP
 import qualified Path.Windows as PW
 import qualified System.FilePath.Posix as FPP
 import qualified System.FilePath.Windows as FPW
-
--- TODO: Examples in the docs!!!!
 
 -- | Strongly typed file path. Central type of the  "StrongPath".
 --
@@ -16,6 +14,12 @@ import qualified System.FilePath.Windows as FPW
 --   [@b@]: __Base__: Absolute ('Abs') or relative ('Rel').
 --
 --   [@t@]: __Type__: File ('File') or directory ('Dir').
+--
+-- Some examples:
+--
+-- > Path System (Dir HomeDir) (File FooFile)
+-- > Path System Abs (Dir HomeDir)
+-- > Path Posix (Rel ProjectRoot) (File ())
 data Path s b t
   = -- System
     RelDir (P.Path P.Rel P.Dir) RelPathPrefix

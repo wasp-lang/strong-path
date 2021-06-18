@@ -5,13 +5,15 @@
 
 Strongly typed file paths in Haskell.
 
-Without StrongPath:
+This library provides a strongly typed representation of file paths, providing more safety during compile time while also making code more readable, compared to the standard solution (`FilePath`, which is really just `String`).
+
+Without `StrongPath`:
 ```hs
 getGitConfigPath :: IO FilePath
 generateHtmlFromMarkdown :: FilePath -> IO FilePath
 ```
 
-With StrongPath:
+With `StrongPath`:
 ```hs
 getGitConfigPath :: IO (Path System (Rel HomeDir) (File GitConfigFile))
 generateHtmlFromMarkdown :: Path System (Rel HomeDir) (File MarkdownFile) -> IO (Path System Abs (File HtmlFile))
@@ -30,7 +32,7 @@ getHomeDirPath = getLine >>= fromJust . parseAbsDir
 Check documentation for more details!
 
 ## Documentation
-Detailed documentation, including examples and API is written via Haddock, inside the source code.
+Detailed documentation, including rich examples and API is written via Haddock, inside the source code.
 
 TODO: Send reader to hackage to read the docs for the latest released version there.
 
