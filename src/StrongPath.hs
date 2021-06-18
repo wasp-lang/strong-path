@@ -15,7 +15,7 @@
 -- What kind of path does it take - relative, absolute? If relative, to what is it relative? What kind of path does it return? Do paths in question follow Posix or Windows standard?
 -- With "StrongPath", same function could look like this:
 --
--- > generateHtmlFromMarkdown :: Path System (Rel HomeDir) (File MarkdownFile) -> Path System Abs (File HtmlFile)
+-- > generateHtmlFromMarkdown :: Path System (Rel HomeDir) (File MarkdownFile) -> IO (Path System Abs (File HtmlFile))
 --
 -- Basic idea is that working with 'FilePath' (which is just an alias for String
 -- and is a default type for representing file paths in Haskell) is too clumsy
