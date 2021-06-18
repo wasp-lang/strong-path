@@ -1,6 +1,6 @@
 module StrongPath.Internal where
 
-import Control.Monad.Catch (MonadThrow)
+import Control.Monad.Catch (MonadThrow, onException)
 import qualified Path as P
 import qualified Path.Posix as PP
 import qualified Path.Windows as PW
@@ -82,8 +82,7 @@ data Windows
 -- You will normally want to use 'System' if you are dealing with the paths on the disk of the host OS
 -- (where your code is running), for example if user is providing you with the path to the file on the disk
 -- that you will be doing something with.
--- Keep in mind that 'System' causes the behaviour of 'Path' to be system/platform-dependant:
--- code running on our OS could cause runtime errors on another OS.
+-- Keep in mind that 'System' causes the behaviour of 'Path' to be system/platform-dependant.
 data System -- Depends on the platform, it is either Posix or Windows.
 
 -- | 'System' is the most commonly used standard, so we provide you with a type alias for it.

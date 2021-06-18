@@ -294,6 +294,7 @@ module StrongPath
     fromAbsFileW,
 
     -- * Parsers (from "Path".'Path.Path' to 'StrongPath.Path')
+    -- $parsersPath
     fromPathRelDir,
     fromPathRelFile,
     fromPathAbsDir,
@@ -308,6 +309,7 @@ module StrongPath
     fromPathAbsFileP,
 
     -- * Conversion (from 'StrongPath.Path' to "Path".'Path.Path')
+    -- $conversionPath
     toPathRelDir,
     toPathRelFile,
     toPathAbsDir,
@@ -351,8 +353,6 @@ import qualified System.FilePath.Windows as FPW
 -- common use case, and you will likely recognize the situation in which you need
 -- system-indepenent behaviour ('Posix', 'Windows') when it happens.
 
--- TODO: Document about ../ + examples.
-
 -- TODO: Add relDirToWindows and relFileToWindows?
 -- TODO: Implement relFile?
 
@@ -365,6 +365,9 @@ import qualified System.FilePath.Windows as FPW
 -- And then fromPathRelDir has polymorhic return type based on standard? I tried a little bit but it is complicated.
 
 -- TODO: If there is no other solution to all this duplication, do some template haskell magic to simplify it.
+
+-- $parsersPath
+-- Functions for parsing "Path" paths into "StrongPath" paths.
 
 -- Constructors
 -- TODO: Although here I specify which exact type of Path (P.Path, PP.Path or PW.Path) is to be
@@ -424,6 +427,9 @@ fromPathRelFileP p = RelFileP p NoPrefix
 fromPathAbsDirP = AbsDirP
 
 fromPathAbsFileP = AbsFileP
+
+-- $conversionPath
+-- Functions for converting paths from "StrongPath" paths into "Path" paths.
 
 -- TODO: Should I go with MonadThrow here instead of just throwing error? Probably!
 --       I could, as error, return actual Path + info on how many ../ were there in StrongPath,
@@ -662,7 +668,14 @@ fromAbsFileW = toFilePath
 --
 -- If path is absolute root and it has no parent, it will return unchanged path.
 --
--- TODO: Examples (pseudocode).
+-- Examples (pseudocode):
+--
+-- > parent "a/b/c" == "a/b"
+-- > parent "/a" == "/"
+-- > parent "/" == "/"
+-- > parent "../a/b" == "../a"
+-- > parent ".." == "../.."
+-- > parent (parent "../a") == "../.."
 parent :: Path s b t -> Path s b (Dir d)
 parent path = case path of
   ---- System
