@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -355,10 +356,10 @@ module StrongPath
   )
 where
 
+import Control.Monad ((>=>))
 import Control.Monad.Catch (MonadThrow)
-import Data.Data (Proxy (..), Typeable)
-import qualified Data.Data as D
 import Data.List (intercalate)
+import qualified Language.Haskell.TH.Lib as TH
 import Language.Haskell.TH.Quote (QuasiQuoter (..))
 import Language.Haskell.TH.Syntax (Lift (..))
 import qualified Language.Haskell.TH.Syntax as TH
@@ -565,18 +566,18 @@ relativeStrongPathWithPrefixToPathError =
 -- and work both on Linux and Windows when using `System` as a standard.
 -- So Posix becames a kind of \"universal\" language for hardcoding the paths.
 
-parseRelDir :: (Typeable d1, Typeable d2, MonadThrow m) => FilePath -> m (Path System (Rel d1) (Dir d2))
-parseRelFile :: (Typeable d, Typeable f, MonadThrow m) => FilePath -> m (Path System (Rel d) (File f))
-parseAbsDir :: (Typeable d, MonadThrow m) => FilePath -> m (Path System Abs (Dir d))
-parseAbsFile :: (Typeable f, MonadThrow m) => FilePath -> m (Path System Abs (File f))
-parseRelDirW :: (Typeable d1, Typeable d2, MonadThrow m) => FilePath -> m (Path Windows (Rel d1) (Dir d2))
-parseRelFileW :: (Typeable d, Typeable f, MonadThrow m) => FilePath -> m (Path Windows (Rel d) (File f))
-parseAbsDirW :: (Typeable d, MonadThrow m) => FilePath -> m (Path Windows Abs (Dir d))
-parseAbsFileW :: (Typeable f, MonadThrow m) => FilePath -> m (Path Windows Abs (File f))
-parseRelDirP :: (Typeable d1, Typeable d2, MonadThrow m) => FilePath -> m (Path Posix (Rel d1) (Dir d2))
-parseRelFileP :: (Typeable d, Typeable f, MonadThrow m) => FilePath -> m (Path Posix (Rel d) (File f))
-parseAbsDirP :: (Typeable d, MonadThrow m) => FilePath -> m (Path Posix Abs (Dir d))
-parseAbsFileP :: (Typeable f, MonadThrow m) => FilePath -> m (Path Posix Abs (File f))
+parseRelDir :: MonadThrow m => FilePath -> m (Path System (Rel d1) (Dir d2))
+parseRelFile :: MonadThrow m => FilePath -> m (Path System (Rel d) (File f))
+parseAbsDir :: MonadThrow m => FilePath -> m (Path System Abs (Dir d))
+parseAbsFile :: MonadThrow m => FilePath -> m (Path System Abs (File f))
+parseRelDirW :: MonadThrow m => FilePath -> m (Path Windows (Rel d1) (Dir d2))
+parseRelFileW :: MonadThrow m => FilePath -> m (Path Windows (Rel d) (File f))
+parseAbsDirW :: MonadThrow m => FilePath -> m (Path Windows Abs (Dir d))
+parseAbsFileW :: MonadThrow m => FilePath -> m (Path Windows Abs (File f))
+parseRelDirP :: MonadThrow m => FilePath -> m (Path Posix (Rel d1) (Dir d2))
+parseRelFileP :: MonadThrow m => FilePath -> m (Path Posix (Rel d) (File f))
+parseAbsDirP :: MonadThrow m => FilePath -> m (Path Posix Abs (Dir d))
+parseAbsFileP :: MonadThrow m => FilePath -> m (Path Posix Abs (File f))
 ---- System
 parseRelDir = parseRelFP RelDir [FP.pathSeparator, FPP.pathSeparator] P.parseRelDir
 
@@ -845,7 +846,7 @@ castFile _ = impossible
 -- Works well for \"normal\" relative paths like @\"a\\b\\c\"@ (Win) or @\"a\/b\/c\"@ (Posix).
 -- If path is weird but still considered relative, like just @\"C:\"@ on Win,
 -- results can be unexpected, most likely resulting with error thrown.
-relDirToPosix :: (Typeable d1, Typeable d2, MonadThrow m) => Path s (Rel d1) (Dir d2) -> m (Path Posix (Rel d1) (Dir d2))
+relDirToPosix :: MonadThrow m => Path s (Rel d1) (Dir d2) -> m (Path Posix (Rel d1) (Dir d2))
 relDirToPosix sp@(RelDir _ _) = parseRelDirP $ FPP.joinPath $ FP.splitDirectories $ toFilePath sp
 relDirToPosix sp@(RelDirW _ _) = parseRelDirP $ FPP.joinPath $ FPW.splitDirectories $ toFilePath sp
 relDirToPosix (RelDirP p pr) = return $ RelDirP p pr
@@ -853,7 +854,7 @@ relDirToPosix _ = impossible
 
 -- | Converts relative file path to posix, if it is not already posix.
 -- Check 'relDirToPosix' for more details, they behave the same.
-relFileToPosix :: (Typeable d1, Typeable f, MonadThrow m) => Path s (Rel d1) (File f) -> m (Path Posix (Rel d1) (File f))
+relFileToPosix :: MonadThrow m => Path s (Rel d1) (File f) -> m (Path Posix (Rel d1) (File f))
 relFileToPosix sp@(RelFile _ _) = parseRelFileP $ FPP.joinPath $ FP.splitDirectories $ toFilePath sp
 relFileToPosix sp@(RelFileW _ _) = parseRelFileP $ FPP.joinPath $ FPW.splitDirectories $ toFilePath sp
 relFileToPosix (RelFileP p pr) = return $ RelFileP p pr
@@ -866,12 +867,13 @@ relFileToPosix _ = impossible
 -- TODO: Write tests.
 
 qq ::
-  (Typeable s, Typeable b, Typeable t, Show err) =>
-  (String -> Either err (Path s b t)) ->
+  (Lift p, Show err) =>
+  (String -> Either err p) ->
+  (p -> TH.ExpQ) ->
   QuasiQuoter
-qq parse =
+qq parse liftP =
   QuasiQuoter
-    { quoteExp = either (error . show) lift . parse,
+    { quoteExp = either (fail . show) liftP . parse,
       quotePat = err "pattern",
       quoteType = err "type",
       quoteDec = err "declaration"
@@ -879,55 +881,28 @@ qq parse =
   where
     err what x = fail ("unexpected " ++ what ++ ", must be expression: " ++ x)
 
--- TODO: This means that custom types provided by users to describe the Files/Dirs also need to be Typeable? So, users can't do just `data MyFile` anymore, instead they have to do `data MyFile deriving Typeable`?
-instance forall s b t. (Typeable s, Typeable b, Typeable t) => TH.Lift (Path s b t) where
-  lift sp = do
-    let s = TH.ConT $ getTCName (Proxy :: Proxy s)
-        b = TH.ConT $ getTCName (Proxy :: Proxy b)
-        t = TH.ConT $ getTCName (Proxy :: Proxy t)
-    case sp of
-      -- TODO: Could we use Typeable here to figure out data constructor and its args and use
-      --   that to construct the final result, so we don't have to pattern match?
-      RelDir path relPrefix -> [|RelDir $(lift path) $(lift relPrefix) :: Path $(pure s) $(pure b) $(pure t)|]
-      RelFile path relPrefix -> [|RelFile $(lift path) $(lift relPrefix) :: Path $(pure s) $(pure b) $(pure t)|]
-      AbsDir path -> [|AbsDir $(lift path) :: Path $(pure s) $(pure b) $(pure t)|]
-      AbsFile path -> [|AbsFile $(lift path) :: Path $(pure s) $(pure b) $(pure t)|]
-      RelDirP path relPrefix -> [|RelDirP $(lift path) $(lift relPrefix) :: Path $(pure s) $(pure b) $(pure t)|]
-      RelFileP path relPrefix -> [|RelFileP $(lift path) $(lift relPrefix) :: Path $(pure s) $(pure b) $(pure t)|]
-      AbsDirP path -> [|AbsDirP $(lift path) :: Path $(pure s) $(pure b) $(pure t)|]
-      AbsFileP path -> [|AbsFileP $(lift path) :: Path $(pure s) $(pure b) $(pure t)|]
-      RelDirW path relPrefix -> [|RelDirW $(lift path) $(lift relPrefix) :: Path $(pure s) $(pure b) $(pure t)|]
-      RelFileW path relPrefix -> [|RelFileW $(lift path) $(lift relPrefix) :: Path $(pure s) $(pure b) $(pure t)|]
-      AbsDirW path -> [|AbsDirW $(lift path) :: Path $(pure s) $(pure b) $(pure t)|]
-      AbsFileW path -> [|AbsFileW $(lift path) :: Path $(pure s) $(pure b) $(pure t)|]
-    where
-      getTCName :: Typeable a => proxy a -> TH.Name
-      getTCName a = TH.Name occ flav
-        where
-          tc = D.typeRepTyCon (D.typeRep a)
-          occ = TH.OccName (D.tyConName tc)
-          flav =
-            TH.NameG
-              TH.TcClsName
-              (TH.PkgName (D.tyConPackage tc))
-              (TH.ModName (D.tyConModule tc))
+liftPath :: TH.TypeQ -> TH.TypeQ -> TH.TypeQ -> Path s b t -> TH.ExpQ
+liftPath s b t p = [|$(lift p) :: Path $s $b $t|]
+
+typeVar :: String -> TH.TypeQ
+typeVar = TH.newName >=> TH.varT
 
 absdir, absdirP, absdirW :: QuasiQuoter
-absdir = qq parseAbsDir
-absdirP = qq parseAbsDirP
-absdirW = qq parseAbsDirW
+absdir = qq parseAbsDir (liftPath [t|System|] [t|Abs|] [t|Dir $(typeVar "d")|])
+absdirP = qq parseAbsDirP (liftPath [t|Posix|] [t|Abs|] [t|Dir $(typeVar "d")|])
+absdirW = qq parseAbsDirW (liftPath [t|Windows|] [t|Abs|] [t|Dir $(typeVar "d")|])
 
 absfile, absfileP, absfileW :: QuasiQuoter
-absfile = qq parseAbsFile
-absfileP = qq parseAbsFileP
-absfileW = qq parseAbsFileW
+absfile = qq parseAbsFile (liftPath [t|System|] [t|Abs|] [t|File $(typeVar "f")|])
+absfileP = qq parseAbsFileP (liftPath [t|Posix|] [t|Abs|] [t|File $(typeVar "f")|])
+absfileW = qq parseAbsFileW (liftPath [t|Windows|] [t|Abs|] [t|File $(typeVar "f")|])
 
 reldir, reldirP, reldirW :: QuasiQuoter
-reldir = qq parseRelDir
-reldirP = qq parseRelDirP
-reldirW = qq parseRelDirW
+reldir = qq parseRelDir (liftPath [t|System|] [t|Rel $(typeVar "d1")|] [t|Dir $(typeVar "d2")|])
+reldirP = qq parseRelDirP (liftPath [t|Posix|] [t|Rel $(typeVar "d1")|] [t|Dir $(typeVar "d2")|])
+reldirW = qq parseRelDirW (liftPath [t|Windows|] [t|Rel $(typeVar "d1")|] [t|Dir $(typeVar "d2")|])
 
 relfile, relfileP, relfileW :: QuasiQuoter
-relfile = qq parseRelFile
-relfileP = qq parseRelFileP
-relfileW = qq parseRelFileW
+relfile = qq parseRelFile (liftPath [t|System|] [t|Rel $(typeVar "d")|] [t|File $(typeVar "f")|])
+relfileP = qq parseRelFileP (liftPath [t|Posix|] [t|Rel $(typeVar "d")|] [t|File $(typeVar "f")|])
+relfileW = qq parseRelFileW (liftPath [t|Windows|] [t|Rel $(typeVar "d")|] [t|File $(typeVar "f")|])

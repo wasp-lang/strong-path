@@ -40,7 +40,7 @@ data Path s b t
   | RelFileP (PP.Path PP.Rel PP.File) RelPathPrefix
   | AbsDirP (PP.Path PP.Abs PP.Dir)
   | AbsFileP (PP.Path PP.Abs PP.File)
-  deriving (Show, Eq, Typeable)
+  deriving (Show, Eq, Lift, Typeable)
 
 data RelPathPrefix
   = -- | ../, Int saying how many times it repeats.
