@@ -178,15 +178,10 @@
 -- With "StrongPath", we could do it like this:
 --
 -- > defaultUserVlcConfigDir :: Path System (Rel UserHomeDir) (Dir UserVlcConfigDir)
--- > defaultUserVlcConfigDir = SP.fromPathRelDir [P.reldir|.config/vlc|]
+-- > defaultUserVlcConfigDir = [SP.reldir|.config/vlc|]
 --
--- where we need to use "Path" library via following import:
---
--- > import qualified Path as P
---
--- and we need QuasiQuotes language extension.
---
--- In the future, "StrongPath" will be able to directly do this, without you needing to additionally import "Path" library, but we haven't implemented this yet.
+-- where we need QuasiQuotes language extension for 'SP.reldir' quasi quoter to work.
+-- This will parse the path during compile-time, ensuring it is valid.
 --
 -- == Paths starting with "../"
 --
@@ -194,19 +189,17 @@
 -- "../" is taken into account and appropriately managed when performing operations on paths.
 --
 -- > someRelPath :: Path System (Rel SomeDir) (File SomeFle)
--- > someRelPath = parseRelFile "../foo/myfile.txt"
---
--- > Currently relative files that start with "../" can't be constructed from string literals in compile time, but support for that will be added in the future.
+-- > someRelPath = [SP.relfile|../foo/myfile.txt|]
 --
 -- == Some more examples
 --
 -- > -- System path to "foo" directory, relative to "bar" directory.
 -- > dirFooInDirBar :: Path System (Rel BarDir) (Dir FooDir)
--- > dirFooInDirBar = fromJust $ fromRelDir "somedir/foo/"
+-- > dirFooInDirBar = [reldir|somedir/foo|]
 -- >
 -- > -- Abs system path to "bar" directory.
 -- > dirBarAbsPath :: Path System Abs (Dir BarDir)
--- > dirBarAbsPath = fromJust $ fromAbsDir "/bar/"
+-- > dirBarAbsPath = [absdir|/bar/|]
 -- >
 -- > -- Abs path to "foo" directory.
 -- > dirFooAbsPath :: Path System Abs (Dir FooDir)
@@ -214,10 +207,10 @@
 -- >
 -- > -- Posix path to "unnamed" file, relative to "foo" directory.
 -- > someFile :: Path Posix (Rel FooDir) File ()
--- > someFile = fromJust $ fromRelFile "some/file.txt"
+-- > someFile = [relfileP|some/file.txt|]
 -- >
 -- > dirHome :: Path System Abs (Dir HomeDir)
--- > dirHome :: fromJust $ fromAbsDir "/home/john/"
+-- > dirHome :: [absdir|/home/john/|]
 -- >
 -- > dirFooCopiedToHomeAsInBar :: Path System Abs (Dir FooDir)
 -- > dirFooCopiedToHomeAsInBar = dirHome </> castRel dirFooInDirBar
@@ -337,6 +330,7 @@ module StrongPath
     relFileToPosix,
 
     -- * QuasiQuoters
+    -- $quasiQuoters
     absdir,
     absdirP,
     absdirW,
@@ -856,11 +850,21 @@ relFileToPosix sp@(RelFileW _ _) = parseRelFileP $ FPP.joinPath $ FPW.splitDirec
 relFileToPosix (RelFileP p pr) = return $ RelFileP p pr
 relFileToPosix _ = impossible
 
--- QuasiQuoters
+-- $quasiQuoters
+-- StrongPath provides quasi quoters that enable you to construct 'Path' in compile time.
+-- You will need to enable 'QuasiQuotes' language extension in order to use them.
+-- With quasi quoters, you can define paths like this:
+--
+-- > dirFooAbsPath :: Path System Abs (Dir FooDir)
+-- > dirFooAbsPath = [absdir|/foo/bar|]
+--
+-- > someFile :: Path Posix (Rel FooDir) File ()
+-- > someFile = [relfileP|some/file.txt|]
+--
+-- These will run at compile-time and underneath use the appropriate parser, ensuring that paths are valid and throwing compile-time error if not.
+
 -- TODO: Split these into a separate module, StrongPath.QuasiQuoters, that will be reexported from this module.
 --   This will also need extraction of some other parts of this module, in order to avoid cyclic imports.
--- TODO: Write haddock docs for quasi quoters.
--- TODO: Write tests.
 
 qq ::
   (Lift p, Show err) =>
