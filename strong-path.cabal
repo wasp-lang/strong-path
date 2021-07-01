@@ -31,6 +31,7 @@ library
       StrongPath.FilePath
       StrongPath.Internal
       StrongPath.Path
+      StrongPath.Readme
       StrongPath.TH
   other-modules:
       Paths_strong_path
