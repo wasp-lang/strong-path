@@ -28,7 +28,10 @@ source-repository head
 library
   exposed-modules:
       StrongPath
+      StrongPath.FilePath
       StrongPath.Internal
+      StrongPath.Path
+      StrongPath.TH
   other-modules:
       Paths_strong_path
   hs-source-dirs:

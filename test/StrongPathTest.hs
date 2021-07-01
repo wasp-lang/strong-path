@@ -12,6 +12,7 @@ import StrongPath.Internal
     extractRelPathPrefix,
     relPathNumParentDirs,
   )
+import StrongPath.Path
 import qualified System.FilePath as FP
 import qualified System.FilePath.Posix as FPP
 import qualified System.FilePath.Windows as FPW
