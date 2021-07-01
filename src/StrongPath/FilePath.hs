@@ -1,7 +1,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 
 module StrongPath.FilePath
-  ( -- * Parsers (from 'FilePath' to 'Path')
+  ( -- ** Parsers (from 'FilePath' to 'Path')
     -- $parsersFilepath
     parseRelDir,
     parseRelFile,
@@ -16,7 +16,7 @@ module StrongPath.FilePath
     parseAbsDirP,
     parseAbsFileP,
 
-    -- * Conversion (from 'Path' to 'FilePath')
+    -- ** Conversion (from 'Path' to 'FilePath')
     -- $conversionFilepath
     toFilePath,
     fromRelDir,

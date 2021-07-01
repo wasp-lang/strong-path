@@ -2,7 +2,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 
 module StrongPath.TH
-  ( -- * QuasiQuoters
+  ( -- ** QuasiQuoters
     -- $quasiQuoters
     absdir,
     absdirP,
