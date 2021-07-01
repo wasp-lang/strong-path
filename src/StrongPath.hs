@@ -44,6 +44,11 @@ module StrongPath
     relFileToPosix,
     --
     module StrongPath.TH,
+
+    -- ** Working with "Path" library
+
+    -- | If you are using "Path" library alongside "StrongPath", you can import module "StrongPath.Path",
+    -- which contains functions for converting "StrongPath" 'Path' into 'Path.Path' and vice versa.
   )
 where
 
@@ -69,8 +74,6 @@ import qualified System.FilePath.Windows as FPW
 -- And then fromPathRelDir has polymorhic return type based on standard? I tried a little bit but it is complicated.
 
 -- TODO: If there is no other solution to all this duplication, do some template haskell magic to simplify it.
-
--- TODO: Document that there is StrongPath.Path module which can be use to interface with Path.
 
 -- $pathStandard
 -- TLDR: If you are not sure which standard to use, go with 'System' since that is the most
