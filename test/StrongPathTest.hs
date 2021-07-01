@@ -27,8 +27,9 @@ data Fizz
 spec_StrongPath :: Spec
 spec_StrongPath = do
   describe "Example with Foo file and Bar, Fizz and Kokolo dirs" $ do
-    let fooFileInBarDir = fromPathRelFile [P.relfile|foo.txt|] :: Path' (Rel Bar) File'
-    let barDirInFizzDir = fromPathRelDir [P.reldir|kokolo/bar|] :: Path' (Rel Fizz) (Dir Bar)
+    let fooFileInBarDir = [relfile|foo.txt|] :: Path' (Rel Bar) File'
+    let barDirInFizzDir = [reldir|kokolo/bar|] :: Path' (Rel Fizz) (Dir Bar)
+    -- TODO: Remove Path usage from line below.
     let fizzDir = (fromPathAbsDir $ systemPathRoot P.</> [P.reldir|fizz|]) :: Path' Abs (Dir Fizz)
     let fooFile = (fizzDir </> barDirInFizzDir </> fooFileInBarDir) :: Path' Abs File'
     let fooFileInFizzDir = (barDirInFizzDir </> fooFileInBarDir) :: Path' (Rel Fizz) File'
@@ -46,26 +47,26 @@ spec_StrongPath = do
 
   describe "relDirToPosix/relFileToPosix correctly converts relative strong path to Posix" $ do
     describe "when strong path is relative dir" $ do
-      let expectedPosixPath = fromPathRelDirP [PP.reldir|test/dir/|]
+      let expectedPosixPath = [reldirP|test/dir/|]
       it "from standard Win" $
-        fromJust (relDirToPosix $ fromPathRelDirW [PW.reldir|test\dir\|])
+        fromJust (relDirToPosix [reldirW|test\dir\|])
           `shouldBe` expectedPosixPath
       it "from standard Posix" $
-        fromJust (relDirToPosix $ fromPathRelDirP [PP.reldir|test/dir/|])
+        fromJust (relDirToPosix [reldirP|test/dir/|])
           `shouldBe` expectedPosixPath
       it "from standard System" $
-        fromJust (relDirToPosix $ fromPathRelDir [P.reldir|test/dir/|])
+        fromJust (relDirToPosix [reldir|test/dir/|])
           `shouldBe` expectedPosixPath
     describe "correctly when strong path is relative file" $ do
-      let expectedPosixPath = fromPathRelFileP [PP.relfile|test/file|]
+      let expectedPosixPath = [relfileP|test/file|]
       it "from standard Win" $
-        fromJust (relFileToPosix $ fromPathRelFileW [PW.relfile|test\file|])
+        fromJust (relFileToPosix [relfileW|test\file|])
           `shouldBe` expectedPosixPath
       it "from standard Posix" $
-        fromJust (relFileToPosix $ fromPathRelFileP [PP.relfile|test/file|])
+        fromJust (relFileToPosix [relfileP|test/file|])
           `shouldBe` expectedPosixPath
       it "from standard System" $
-        fromJust (relFileToPosix $ fromPathRelFile [P.relfile|test/file|])
+        fromJust (relFileToPosix [relfileP|test/file|])
           `shouldBe` expectedPosixPath
 
   describe "extractRelPathPrefix correctly extracts prefix from rel FilePath." $ do
@@ -231,6 +232,27 @@ spec_StrongPath = do
       tests parseRelDirW parseRelFileW parseAbsDirW parseAbsFileW "C:\\"
     describe "when standard is Posix" $
       tests parseRelDirP parseRelFileP parseAbsDirP parseAbsFileP "/"
+
+  describe "Quasi quoters generate expected values with expected types" $ do
+    it "System" $ do
+      [reldir|foo/bar/|] `shouldBe` fromJust (parseRelDir "foo/bar/")
+      [relfile|../foo/bar|] `shouldBe` fromJust (parseRelFile "../foo/bar")
+      -- TODO: These two below might fail on Win due to C:\\ not being used as root?
+      -- In that case I have to parametrize them somehow, or just remove them.
+      [absdir|/foo/bar/|] `shouldBe` fromJust (parseAbsDir "/foo/bar/")
+      [absfile|/foo/bar|] `shouldBe` fromJust (parseAbsFile "/foo/bar")
+
+    it "Posix" $ do
+      [reldirP|foo/bar/|] `shouldBe` fromJust (parseRelDirP "foo/bar/")
+      [relfileP|../foo/bar|] `shouldBe` fromJust (parseRelFileP "../foo/bar")
+      [absdirP|/foo/bar/|] `shouldBe` fromJust (parseAbsDirP "/foo/bar/")
+      [absfileP|/foo/bar|] `shouldBe` fromJust (parseAbsFileP "/foo/bar")
+
+    it "Windows" $ do
+      [reldirW|foo/bar/|] `shouldBe` fromJust (parseRelDirW "foo/bar/")
+      [relfileW|..\foo/bar|] `shouldBe` fromJust (parseRelFileW "..\\foo/bar")
+      [absdirW|C:\foo\bar\|] `shouldBe` fromJust (parseAbsDirW "C:\\foo\\bar\\")
+      [absfileW|C:\foo\bar|] `shouldBe` fromJust (parseAbsFileW "C:\\foo\\bar")
 
 spec_Path :: Spec
 spec_Path = do

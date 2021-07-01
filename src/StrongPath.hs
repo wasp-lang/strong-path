@@ -1,4 +1,4 @@
-{-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 -- | This library provides a strongly typed representation of file paths, providing more safety during compile time while also making code more readable, compared to the standard solution ("System.FilePath").
 --
@@ -178,15 +178,10 @@
 -- With "StrongPath", we could do it like this:
 --
 -- > defaultUserVlcConfigDir :: Path System (Rel UserHomeDir) (Dir UserVlcConfigDir)
--- > defaultUserVlcConfigDir = SP.fromPathRelDir [P.reldir|.config/vlc|]
+-- > defaultUserVlcConfigDir = [SP.reldir|.config/vlc|]
 --
--- where we need to use "Path" library via following import:
---
--- > import qualified Path as P
---
--- and we need QuasiQuotes language extension.
---
--- In the future, "StrongPath" will be able to directly do this, without you needing to additionally import "Path" library, but we haven't implemented this yet.
+-- where we need QuasiQuotes language extension for 'SP.reldir' quasi quoter to work.
+-- This will parse the path during compile-time, ensuring it is valid.
 --
 -- == Paths starting with "../"
 --
@@ -194,19 +189,17 @@
 -- "../" is taken into account and appropriately managed when performing operations on paths.
 --
 -- > someRelPath :: Path System (Rel SomeDir) (File SomeFle)
--- > someRelPath = parseRelFile "../foo/myfile.txt"
---
--- > Currently relative files that start with "../" can't be constructed from string literals in compile time, but support for that will be added in the future.
+-- > someRelPath = [SP.relfile|../foo/myfile.txt|]
 --
 -- == Some more examples
 --
 -- > -- System path to "foo" directory, relative to "bar" directory.
 -- > dirFooInDirBar :: Path System (Rel BarDir) (Dir FooDir)
--- > dirFooInDirBar = fromJust $ fromRelDir "somedir/foo/"
+-- > dirFooInDirBar = [reldir|somedir/foo|]
 -- >
 -- > -- Abs system path to "bar" directory.
 -- > dirBarAbsPath :: Path System Abs (Dir BarDir)
--- > dirBarAbsPath = fromJust $ fromAbsDir "/bar/"
+-- > dirBarAbsPath = [absdir|/bar/|]
 -- >
 -- > -- Abs path to "foo" directory.
 -- > dirFooAbsPath :: Path System Abs (Dir FooDir)
@@ -214,10 +207,10 @@
 -- >
 -- > -- Posix path to "unnamed" file, relative to "foo" directory.
 -- > someFile :: Path Posix (Rel FooDir) File ()
--- > someFile = fromJust $ fromRelFile "some/file.txt"
+-- > someFile = [relfileP|some/file.txt|]
 -- >
 -- > dirHome :: Path System Abs (Dir HomeDir)
--- > dirHome :: fromJust $ fromAbsDir "/home/john/"
+-- > dirHome :: [absdir|/home/john/|]
 -- >
 -- > dirFooCopiedToHomeAsInBar :: Path System Abs (Dir FooDir)
 -- > dirFooCopiedToHomeAsInBar = dirHome </> castRel dirFooInDirBar
@@ -335,11 +328,31 @@ module StrongPath
     -- * Conversion of path standard
     relDirToPosix,
     relFileToPosix,
+
+    -- * QuasiQuoters
+    -- $quasiQuoters
+    absdir,
+    absdirP,
+    absdirW,
+    absfile,
+    absfileP,
+    absfileW,
+    reldir,
+    reldirP,
+    reldirW,
+    relfile,
+    relfileP,
+    relfileW,
   )
 where
 
+import Control.Monad ((>=>))
 import Control.Monad.Catch (MonadThrow)
 import Data.List (intercalate)
+import qualified Language.Haskell.TH.Lib as TH
+import Language.Haskell.TH.Quote (QuasiQuoter (..))
+import Language.Haskell.TH.Syntax (Lift (..))
+import qualified Language.Haskell.TH.Syntax as TH
 import qualified Path as P
 import qualified Path.Posix as PP
 import qualified Path.Windows as PW
@@ -347,11 +360,6 @@ import StrongPath.Internal
 import qualified System.FilePath as FP
 import qualified System.FilePath.Posix as FPP
 import qualified System.FilePath.Windows as FPW
-
--- $pathStandard
--- TLDR: If you are not sure which standard to use, go with 'System' since that is the most
--- common use case, and you will likely recognize the situation in which you need
--- system-indepenent behaviour ('Posix', 'Windows') when it happens.
 
 -- TODO: Add relDirToWindows and relFileToWindows?
 -- TODO: Implement relFile?
@@ -365,6 +373,13 @@ import qualified System.FilePath.Windows as FPW
 -- And then fromPathRelDir has polymorhic return type based on standard? I tried a little bit but it is complicated.
 
 -- TODO: If there is no other solution to all this duplication, do some template haskell magic to simplify it.
+
+-- TODO: Extract "Path" parsers and converters into separate StrongPath.Path module, since we don't need them always any more.
+
+-- $pathStandard
+-- TLDR: If you are not sure which standard to use, go with 'System' since that is the most
+-- common use case, and you will likely recognize the situation in which you need
+-- system-indepenent behaviour ('Posix', 'Windows') when it happens.
 
 -- $parsersPath
 -- Functions for parsing "Path" paths into "StrongPath" paths.
@@ -834,3 +849,60 @@ relFileToPosix sp@(RelFile _ _) = parseRelFileP $ FPP.joinPath $ FP.splitDirecto
 relFileToPosix sp@(RelFileW _ _) = parseRelFileP $ FPP.joinPath $ FPW.splitDirectories $ toFilePath sp
 relFileToPosix (RelFileP p pr) = return $ RelFileP p pr
 relFileToPosix _ = impossible
+
+-- $quasiQuoters
+-- StrongPath provides quasi quoters that enable you to construct 'Path' in compile time.
+-- You will need to enable 'QuasiQuotes' language extension in order to use them.
+-- With quasi quoters, you can define paths like this:
+--
+-- > dirFooAbsPath :: Path System Abs (Dir FooDir)
+-- > dirFooAbsPath = [absdir|/foo/bar|]
+--
+-- > someFile :: Path Posix (Rel FooDir) File ()
+-- > someFile = [relfileP|some/file.txt|]
+--
+-- These will run at compile-time and underneath use the appropriate parser, ensuring that paths are valid and throwing compile-time error if not.
+
+-- TODO: Split these into a separate module, StrongPath.QuasiQuoters, that will be reexported from this module.
+--   This will also need extraction of some other parts of this module, in order to avoid cyclic imports.
+
+qq ::
+  (Lift p, Show err) =>
+  (String -> Either err p) ->
+  (p -> TH.ExpQ) ->
+  QuasiQuoter
+qq parse liftP =
+  QuasiQuoter
+    { quoteExp = either (fail . show) liftP . parse,
+      quotePat = err "pattern",
+      quoteType = err "type",
+      quoteDec = err "declaration"
+    }
+  where
+    err what x = fail ("unexpected " ++ what ++ ", must be expression: " ++ x)
+
+liftPath :: TH.TypeQ -> TH.TypeQ -> TH.TypeQ -> Path s b t -> TH.ExpQ
+liftPath s b t p = [|$(lift p) :: Path $s $b $t|]
+
+typeVar :: String -> TH.TypeQ
+typeVar = TH.newName >=> TH.varT
+
+absdir, absdirP, absdirW :: QuasiQuoter
+absdir = qq parseAbsDir (liftPath [t|System|] [t|Abs|] [t|Dir $(typeVar "d")|])
+absdirP = qq parseAbsDirP (liftPath [t|Posix|] [t|Abs|] [t|Dir $(typeVar "d")|])
+absdirW = qq parseAbsDirW (liftPath [t|Windows|] [t|Abs|] [t|Dir $(typeVar "d")|])
+
+absfile, absfileP, absfileW :: QuasiQuoter
+absfile = qq parseAbsFile (liftPath [t|System|] [t|Abs|] [t|File $(typeVar "f")|])
+absfileP = qq parseAbsFileP (liftPath [t|Posix|] [t|Abs|] [t|File $(typeVar "f")|])
+absfileW = qq parseAbsFileW (liftPath [t|Windows|] [t|Abs|] [t|File $(typeVar "f")|])
+
+reldir, reldirP, reldirW :: QuasiQuoter
+reldir = qq parseRelDir (liftPath [t|System|] [t|Rel $(typeVar "d1")|] [t|Dir $(typeVar "d2")|])
+reldirP = qq parseRelDirP (liftPath [t|Posix|] [t|Rel $(typeVar "d1")|] [t|Dir $(typeVar "d2")|])
+reldirW = qq parseRelDirW (liftPath [t|Windows|] [t|Rel $(typeVar "d1")|] [t|Dir $(typeVar "d2")|])
+
+relfile, relfileP, relfileW :: QuasiQuoter
+relfile = qq parseRelFile (liftPath [t|System|] [t|Rel $(typeVar "d")|] [t|File $(typeVar "f")|])
+relfileP = qq parseRelFileP (liftPath [t|Posix|] [t|Rel $(typeVar "d")|] [t|File $(typeVar "f")|])
+relfileW = qq parseRelFileW (liftPath [t|Windows|] [t|Rel $(typeVar "d")|] [t|File $(typeVar "f")|])
