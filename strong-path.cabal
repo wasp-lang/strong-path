@@ -50,7 +50,13 @@ test-suite strong-path-test
   type: exitcode-stdio-1.0
   main-is: TastyDiscoverDriver.hs
   other-modules:
+      PathTest
+      StrongPath.FilePathTest
+      StrongPath.InternalTest
+      StrongPath.PathTest
+      StrongPath.THTest
       StrongPathTest
+      Test.Utils
       Paths_strong_path
   hs-source-dirs:
       test
