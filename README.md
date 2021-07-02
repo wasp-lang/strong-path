@@ -1,6 +1,6 @@
 # StrongPath
 
-[![CI](https://github.com/wasp-lang/strong-path/actions/workflows/CI/badge.svg?branch=master)](https://github.com/wasp-lang/strong-path/actions/workflows/ci.yaml?query=branch%3Amaster)
+[![CI](https://img.shields.io/github/workflow/status/wasp-lang/strong-path/CI/master)](https://github.com/wasp-lang/strong-path/actions/workflows/ci.yaml?query=branch%3Amaster)
 [![Hackage](https://img.shields.io/hackage/v/strong-path.svg)](https://hackage.haskell.org/package/strong-path)
 [![Stackage LTS](http://stackage.org/package/strong-path/badge/lts)](http://stackage.org/lts/package/strong-path)
 [![Stackage Nightly](http://stackage.org/package/strong-path/badge/nightly)](http://stackage.org/nightly/package/strong-path)
