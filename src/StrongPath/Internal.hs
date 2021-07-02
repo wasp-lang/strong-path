@@ -7,8 +7,6 @@ import Language.Haskell.TH.Syntax (Lift)
 import qualified Path as P
 import qualified Path.Posix as PP
 import qualified Path.Windows as PW
-import qualified System.FilePath.Posix as FPP
-import qualified System.FilePath.Windows as FPW
 
 -- | Strongly typed file path. Central type of the "StrongPath".
 --
@@ -107,11 +105,12 @@ type Dir' = Dir ()
 -- it is convenient to use unit @()@.
 type File' = File ()
 
+-- TODO: Extract `parseRelFP` and `extractRelPathPrefix` into StrongPath.FilePath.Internals?
 parseRelFP ::
   MonadThrow m =>
-  (P.Path pb pt -> RelPathPrefix -> Path s (Rel d) t) ->
+  (p -> RelPathPrefix -> Path s (Rel d) t) ->
   [Char] ->
-  (FilePath -> m (P.Path pb pt)) ->
+  (FilePath -> m p) ->
   FilePath ->
   m (Path s (Rel d) t)
 parseRelFP constructor validSeparators pathParser fp =
@@ -140,58 +139,6 @@ extractRelPathPrefix validSeparators path =
          in (1 + n, p')
       | p == ".." = (1, "")
       | otherwise = (0, p)
-
--- NOTE: These three funtions, pathWinCombine... exist only to fix
---   Path.Windows.</> behaviour regarding concatenating '.' rel dirs
---   with other paths. While for Path.System and Path.Posix this concatenation
---   behaves as expected on Linux, Path.Windows behaves differently!
---   In more details:
---   [P.reldir|.|] P.</> [P.reldir|a|] results in [P.reldir|a|]
---   however
---   [PW.reldir|.|] PW.</> [PW.reldir|a|] results in [PW.reldir|.\\a|]
---   To summarize it, for System/Posix, Path behaves as:
---   . </> a = a
---   . </> . = .
---   a </> a = a
---   While for Windows, Path behaves as:
---   . </> a = .\a
---   . </> . = .\.
---   a </> . = a\.
---   which we don't want, we want it to behave same as for System/Posix.
---   That is why we handle these cases as special cases and then we let the Path.Windows.</>
---   do the rest of the work.
-pathWinCombineRelDirAndRelFile :: PW.Path PW.Rel PW.Dir -> PW.Path PW.Rel PW.File -> PW.Path PW.Rel PW.File
-pathWinCombineRelDirAndRelFile lp rp
-  | PW.toFilePath lp == ['.', FPW.pathSeparator] = rp
-  | otherwise = lp PW.</> rp
-
-pathWinCombineRelDirAndRelDir :: PW.Path PW.Rel PW.Dir -> PW.Path PW.Rel PW.Dir -> PW.Path PW.Rel PW.Dir
-pathWinCombineRelDirAndRelDir lp rp
-  | PW.toFilePath lp == ['.', FPW.pathSeparator] = rp
-  | PW.toFilePath rp == ['.', FPW.pathSeparator] = lp
-  | otherwise = lp PW.</> rp
-
-pathWinCombineAbsDirAndRelDir :: PW.Path PW.Abs PW.Dir -> PW.Path PW.Rel PW.Dir -> PW.Path PW.Abs PW.Dir
-pathWinCombineAbsDirAndRelDir lp rp
-  | PW.toFilePath rp == ['.', FPW.pathSeparator] = lp
-  | otherwise = lp PW.</> rp
-
--- NOTE: Same as pathWinCombineRelDirAndRelFile but for Posix (Path has the same problem).
-pathPosixCombineRelDirAndRelFile :: PP.Path PP.Rel PP.Dir -> PP.Path PP.Rel PP.File -> PP.Path PP.Rel PP.File
-pathPosixCombineRelDirAndRelFile lp rp
-  | PP.toFilePath lp == ['.', FPP.pathSeparator] = rp
-  | otherwise = lp PP.</> rp
-
-pathPosixCombineRelDirAndRelDir :: PP.Path PP.Rel PP.Dir -> PP.Path PP.Rel PP.Dir -> PP.Path PP.Rel PP.Dir
-pathPosixCombineRelDirAndRelDir lp rp
-  | PP.toFilePath lp == ['.', FPP.pathSeparator] = rp
-  | PP.toFilePath rp == ['.', FPP.pathSeparator] = lp
-  | otherwise = lp PP.</> rp
-
-pathPosixCombineAbsDirAndRelDir :: PP.Path PP.Abs PP.Dir -> PP.Path PP.Rel PP.Dir -> PP.Path PP.Abs PP.Dir
-pathPosixCombineAbsDirAndRelDir lp rp
-  | PP.toFilePath rp == ['.', FPP.pathSeparator] = lp
-  | otherwise = lp PP.</> rp
 
 prefixNumParentDirs :: RelPathPrefix -> Int
 prefixNumParentDirs NoPrefix = 0

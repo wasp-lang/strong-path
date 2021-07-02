@@ -40,25 +40,6 @@ import StrongPath.Internal
 -- Functions for parsing "Path" paths into "StrongPath" paths.
 
 -- Constructors
--- TODO: Although here I specify which exact type of Path (P.Path, PP.Path or PW.Path) is to be
---   given as first argument, I realized that if I do:
---     SP.fromPathRelDirW [P.reldir|test\file|]
---   compiler will not complain, although I put P instead of PW!
---   I am not sure why is this happening, we should figure it out.
---   This is not great because it means somebody can by accident construct
---   StrongPath that should be Windows but is really Posix.
---   Or can they? I am not sure if P.Path is just considered the same as PW.Path,
---   or P.relfile and PW.relfile and PP.relfile for some weird reason are polymorhic
---   in return type, or what is happening. I believe it is something close to the latter,
---   in which case it is less of a problem, but I am not sure.
---   Actually, it also does not complain if I do:
---     SP.fromPathRelFileP [P.reldir|test/file|]
---   so although I put reldir, and it should be relfile, it does not complain! How is that possible!?
---   If I put absdir, then it does complain, however not if I put reldir. Very weird.
---   NOTE: In Path, Path.Windows.Path and Path.Posix.Path are actually the same Path it seems
---     so compiler does not differentiate them (because they are all exporting the same module containing Path),
---     but Path.Windows.Rel and Path.Posix.Rel (and same for Abs/Dir/File) are not the same,
---     because they are done via Include mechanism.
 fromPathRelDir :: P.Path P.Rel P.Dir -> Path System (Rel a) (Dir b)
 fromPathRelFile :: P.Path P.Rel P.File -> Path System (Rel a) (File f)
 fromPathAbsDir :: P.Path P.Abs P.Dir -> Path System Abs (Dir a)
