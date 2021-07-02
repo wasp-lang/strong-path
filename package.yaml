@@ -13,7 +13,7 @@ extra-source-files:
 synopsis:            Strongly typed paths in Haskell.
 category:            System, Filesystem, FilePath
 
-description:         Replacement for a FilePath that enables you to handle filepaths in your code in a type-safe manner. You can specify at type level if they are relative, absolute, file, directory, posix, windows, and even to which file/directory they point to or are relative to. See documentation at https://hackage.haskell.org/package/strong-path/docs/StrongPath.html .
+description:         Replacement for a FilePath that enables you to handle filepaths in your code in a type-safe manner. You can specify at type level if they are relative, absolute, file, directory, posix, windows, and even to which file or directory they point to or are relative to.
 
 dependencies:
   - base >= 4.7 && < 5
