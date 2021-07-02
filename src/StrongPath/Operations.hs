@@ -117,29 +117,29 @@ lsp@(AbsDir _) </> (RelDir rp rprefix) =
 ---- Windows
 lsp@(RelDirW _ _) </> (RelFileW rp rprefix) =
   let (RelDirW lp' lprefix') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in RelFileW (lp' `pathWinCombineRelDirAndRelFile` rp) lprefix'
+   in RelFileW (lp' PW.</> rp) lprefix'
 lsp@(RelDirW _ _) </> (RelDirW rp rprefix) =
   let (RelDirW lp' lprefix') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in RelDirW (lp' `pathWinCombineRelDirAndRelDir` rp) lprefix'
+   in RelDirW (lp' PW.</> rp) lprefix'
 lsp@(AbsDirW _) </> (RelFileW rp rprefix) =
   let (AbsDirW lp') = iterate parent lsp !! prefixNumParentDirs rprefix
    in AbsFileW (lp' PW.</> rp)
 lsp@(AbsDirW _) </> (RelDirW rp rprefix) =
   let (AbsDirW lp') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in AbsDirW (lp' `pathWinCombineAbsDirAndRelDir` rp)
+   in AbsDirW (lp' PW.</> rp)
 ---- Posix
 lsp@(RelDirP _ _) </> (RelFileP rp rprefix) =
   let (RelDirP lp' lprefix') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in RelFileP (lp' `pathPosixCombineRelDirAndRelFile` rp) lprefix'
+   in RelFileP (lp' PP.</> rp) lprefix'
 lsp@(RelDirP _ _) </> (RelDirP rp rprefix) =
   let (RelDirP lp' lprefix') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in RelDirP (lp' `pathPosixCombineRelDirAndRelDir` rp) lprefix'
+   in RelDirP (lp' PP.</> rp) lprefix'
 lsp@(AbsDirP _) </> (RelFileP rp rprefix) =
   let (AbsDirP lp') = iterate parent lsp !! prefixNumParentDirs rprefix
    in AbsFileP (lp' PP.</> rp)
 lsp@(AbsDirP _) </> (RelDirP rp rprefix) =
   let (AbsDirP lp') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in AbsDirP (lp' `pathPosixCombineAbsDirAndRelDir` rp)
+   in AbsDirP (lp' PP.</> rp)
 _ </> _ = impossible
 
 -- | Enables you to redefine which dir is the path relative to.
