@@ -30,9 +30,10 @@ library
       StrongPath
       StrongPath.FilePath
       StrongPath.Internal
+      StrongPath.Operations
       StrongPath.Path
-      StrongPath.Readme
       StrongPath.TH
+      StrongPath.Types
   other-modules:
       Paths_strong_path
   hs-source-dirs:
