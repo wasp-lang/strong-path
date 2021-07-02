@@ -1,6 +1,7 @@
 # StrongPath
 
 [![CI](https://github.com/wasp-lang/strong-path/workflows/CI/badge.svg?branch=master)](https://github.com/wasp-lang/strong-path/actions/workflows/ci.yaml?query=branch%3Amaster)
+[![Documentation](https://img.shields.io/badge/Docs-Haddock-blue)](https://hackage.haskell.org/package/strong-path/docs/StrongPath.html)
 [![Hackage](https://img.shields.io/hackage/v/strong-path.svg)](https://hackage.haskell.org/package/strong-path)
 [![Stackage LTS](http://stackage.org/package/strong-path/badge/lts)](http://stackage.org/lts/package/strong-path)
 [![Stackage Nightly](http://stackage.org/package/strong-path/badge/nightly)](http://stackage.org/nightly/package/strong-path)
@@ -51,7 +52,9 @@ We are using `ormolu` for code formatting. In order for the PR to pass, it needs
 
 ### Publishing to Hackage
 
-`stack sdist` to build publishable .tar.gz., and then we need to upload it manually.
+`stack sdist` to build publishable .tar.gz., and then we need to upload it manually to Hackage.
+
+Check if Hackage correctly built the Haddock docs -> if not, you need to upload them manually (check Hackage webpage for instructions).
 
 Make sure to update the version of package in package.yaml.
 
