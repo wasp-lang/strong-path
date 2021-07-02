@@ -1,5 +1,5 @@
 name:                strong-path
-version:             0.1.0.0
+version:             1.0.0
 github:              "wasp-lang/strong-path"
 license:             MIT
 author:              "Martin Sosic"
@@ -14,10 +14,7 @@ extra-source-files:
 synopsis:            Strongly typed paths in Haskell.
 category:            System, Filesystem, FilePath
 
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/wasp-lang/strong-path#readme>
+description:         Replacement for a FilePath that enables you to handle filepaths in your code in a type-safe manner. You can specify at type level if they are relative, absolute, file, directory, posix, windows, and even to which file/directory they point to or are relative to.
 
 dependencies:
   - base >= 4.7 && < 5

@@ -33,11 +33,10 @@ getHomeDirPath = getLine >>= fromJust . parseAbsDir
 Check documentation for more details!
 
 ## Documentation
-Detailed documentation, including rich examples and API is written via Haddock, inside the source code.
+Detailed documentation, including rich examples and API is written via Haddock.
+Check out the latest docs on Hackage: [Documentation](https://hackage.haskell.org/package/strong-path/docs/StrongPath.html).
 
-TODO: Send reader to hackage to read the docs for the latest released version there.
-
-You can build and view the Haddock documentation yourself by running `stack haddock --open`.
+You can also build and view the Haddock documentation yourself if you wish, by running `stack haddock --open`.
 
 ## Contributing / development
 `strong-path` is `Stack` project, so make sure you have `stack` installed on your machine.

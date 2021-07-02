@@ -5,9 +5,9 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           strong-path
-version:        0.1.0.0
+version:        1.0.0
 synopsis:       Strongly typed paths in Haskell.
-description:    Please see the README on GitHub at <https://github.com/wasp-lang/strong-path#readme>
+description:    Replacement for a FilePath that enables you to handle filepaths in your code in a type-safe manner. You can specify at type level if they are relative, absolute, file, directory, posix, windows, and even to which file/directory they point to or are relative to.
 category:       System, Filesystem, FilePath
 homepage:       https://github.com/wasp-lang/strong-path#readme
 bug-reports:    https://github.com/wasp-lang/strong-path/issues
