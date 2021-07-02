@@ -1,8 +1,9 @@
 # StrongPath
 
-<p align=center>
-  <a href="https://github.com/wasp-lang/strong-path/actions"><img alt="build status" src="https://img.shields.io/github/workflow/status/wasp-lang/strong-path/CI"/></a>
-</p>
+![CI](https://github.com/wasp-lang/strong-path/workflows/CI/badge.svg)
+[![Hackage](https://img.shields.io/hackage/v/strong-path.svg)](https://hackage.haskell.org/package/strong-path)
+[![Stackage LTS](http://stackage.org/package/strong-path/badge/lts)](http://stackage.org/lts/package/strong-path)
+[![Stackage Nightly](http://stackage.org/package/strong-path/badge/nightly)](http://stackage.org/nightly/package/strong-path)
 
 Strongly typed file paths in Haskell.
 
@@ -40,10 +41,18 @@ Check out the latest documentation on Hackage: [Documentation](https://hackage.h
 You can also build and view the Haddock documentation yourself if you wish, by running `stack haddock --open`.
 
 ## Contributing / development
+We are using `ormolu` for code formatting. In order for the PR to pass, it needs to be formatted by `ormolu`.
+
 `strong-path` is `Stack` project, so make sure you have `stack` installed on your machine.
 
 `stack build` to build the project, `stack test` to run the tests.
 
 `stack build --file-watch --haddock` to rebuild documentation as you change it.
 
-`stack sdist` to build publishable .tar.gz.
+### Publishing to Hackage
+
+`stack sdist` to build publishable .tar.gz., and then we need to upload it manually.
+
+Make sure to update the version of package in package.yaml.
+
+We should also tag the commit in git with version tag (e.g. v1.0.0.0) so we know which version of code was used to produce that release.

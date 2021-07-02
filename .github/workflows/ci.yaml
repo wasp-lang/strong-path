@@ -107,23 +107,3 @@ jobs:
 
       - name: Build docs
         run: stack haddock
-
-      - name: Create distribution
-        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest'
-        run: stack sdist
-
-      # TODO: Make releasing work!
-      #   What do I want to put in release? Probably generated Haddock docs, and maybe generated sdist?
-      #   How do I do that? I know I can find path to sdist with `stack path --dist-dir`, but I am not sure
-      #   how do I figure out path to generate Haddock documentation.
-      #   Figure this all out properly, see what other Haskell libraries include in their releases.
-      # - name: Create Github release
-      #   uses: ncipollo/release-action@v1
-      #   if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest'
-      #   with:
-      #     draft: true
-      #     allowUpdates: true
-      #     artifacts: "artifacts/*"
-      #     artifactErrorsFailBuild: true
-      #     replacesArtifacts: true
-      #     token: ${{ secrets.GITHUB_TOKEN }}
