@@ -42,6 +42,10 @@ packages:
 extra-deps:
   - path-0.9.0
 
+# NOTE(martin): This tells stack to generate correct version bounds in generated .cabal,
+# which are required by Hackage.
+pvp-bounds: both
+
 # Override default flag values for local packages and extra-deps
 # flags: {}
 

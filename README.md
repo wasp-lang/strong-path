@@ -30,11 +30,12 @@ getHomeDirPath :: IO (Path System Abs (Dir HomeDir))
 getHomeDirPath = getLine >>= fromJust . parseAbsDir
 ```
 
-Check documentation for more details!
+Check [documentation](https://hackage.haskell.org/package/strong-path/docs/StrongPath.html) for more details!
 
 ## Documentation
 Detailed documentation, including rich examples and API is written via Haddock.
-Check out the latest docs on Hackage: [Documentation](https://hackage.haskell.org/package/strong-path/docs/StrongPath.html).
+
+Check out the latest documentation on Hackage: [Documentation](https://hackage.haskell.org/package/strong-path/docs/StrongPath.html).
 
 You can also build and view the Haddock documentation yourself if you wish, by running `stack haddock --open`.
 
