@@ -5,9 +5,9 @@ module StrongPath
     --
     -- Example of using "System.FilePath" vs using "StrongPath" to describe the path to git config file (relative to the home directory):
     --
-    -- > getGitConfigPath :: IO FilePath
+    -- > getBashProfile :: IO FilePath
     --
-    -- > getGitConfigPath :: IO (Path System (Rel HomeDir) (File GitConfigFile))
+    -- > getBashProfile :: IO (Path System (Rel HomeDir) (File BashProfile))
     --
     -- Or, imagine stumbling onto this function:
     --

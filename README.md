@@ -12,19 +12,17 @@ This library provides a strongly typed representation of file paths, providing m
 
 Without `StrongPath`:
 ```hs
-getGitConfigPath :: IO FilePath
-generateHtmlFromMarkdown :: FilePath -> IO FilePath
+getBashProfile :: IO FilePath
 ```
 
 With `StrongPath`:
 ```hs
-getGitConfigPath :: IO (Path System (Rel HomeDir) (File GitConfigFile))
-generateHtmlFromMarkdown :: Path System (Rel HomeDir) (File MarkdownFile) -> IO (Path System Abs (File HtmlFile))
+getBashProfile :: IO (Path System (Rel HomeDir) (File BashProfile))
 ```
 
 Simple but complete example:
 ```hs
-import StrongPath (Path, System, Abs, Rel, File, Dir, (</>), parseAbsDir)
+import StrongPath (Path, System, Abs, Dir, parseAbsDir)
 
 data HomeDir
 
