@@ -59,6 +59,7 @@ spec_StrongPath = do
     let tests relDirParser relFileParser absDirParser absFileParser root = do
           test (relDirParser "a/b") (relFileParser "c.txt") (relFileParser "a/b/c.txt")
           test (relDirParser "a/b") (relFileParser "../c.txt") (relFileParser "a/c.txt")
+          test (relDirParser "..") (relFileParser "b/c.txt") (relFileParser "../b/c.txt")
           test (relDirParser "..") (relFileParser "../c.txt") (relFileParser "../../c.txt")
           test (relDirParser "..") (relDirParser "..") (relDirParser "../..")
           test (relDirParser ".") (relDirParser "../a") (relDirParser "../a")
