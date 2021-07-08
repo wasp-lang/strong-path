@@ -1,8 +1,30 @@
 {-# LANGUAGE DeriveLift #-}
 
-module StrongPath.Internal where
+module StrongPath.Internal
+  ( Path (..),
+    RelPathPrefix (..),
+    Abs,
+    Rel,
+    Dir,
+    File,
+    Posix,
+    Windows,
+    System,
+    Path',
+    File',
+    Dir',
+    Rel',
+    parseRelFileFP,
+    parseRelDirFP,
+    impossible,
+    prefixNumParentDirs,
+    relPathNumParentDirs,
+    relPathPrefix,
+    extractRelPathPrefix,
+  )
+where
 
-import Control.Monad.Catch (MonadThrow)
+import Control.Monad.Catch (MonadThrow, throwM)
 import Language.Haskell.TH.Syntax (Lift)
 import qualified Path as P
 import qualified Path.Posix as PP
@@ -105,18 +127,41 @@ type Dir' = Dir ()
 -- it is convenient to use unit @()@.
 type File' = File ()
 
--- TODO: Extract `parseRelFP` and `extractRelPathPrefix` into StrongPath.FilePath.Internals?
-parseRelFP ::
+-- TODO: Extract `parseRelFileFP`, `parseRelDirFP`, `parseRelFP` and `extractRelPathPrefix` into StrongPath.FilePath.Internals?
+
+parseRelFileFP ::
   MonadThrow m =>
-  (p -> RelPathPrefix -> Path s (Rel d) t) ->
+  (p -> RelPathPrefix -> Path s (Rel d) (File f)) ->
   [Char] ->
   (FilePath -> m p) ->
   FilePath ->
-  m (Path s (Rel d) t)
-parseRelFP constructor validSeparators pathParser fp =
+  m (Path s (Rel d) (File f))
+parseRelFileFP _ _ _ "" = throwM (P.InvalidRelFile "")
+parseRelFileFP constructor validSeparators pathParser fp = parseRelFP constructor validSeparators pathParser fp
+
+parseRelDirFP ::
+  MonadThrow m =>
+  (p -> RelPathPrefix -> Path s (Rel d1) (Dir d2)) ->
+  [Char] ->
+  (FilePath -> m p) ->
+  FilePath ->
+  m (Path s (Rel d1) (Dir d2))
+parseRelDirFP _ _ _ "" = throwM (P.InvalidRelDir "")
+parseRelDirFP constructor validSeparators pathParser fp = parseRelFP constructor validSeparators pathParser fp
+
+-- Helper function for the parseRelFileFP and parseRelDirFP, should not be used called directly.
+parseRelFP ::
+  MonadThrow m =>
+  (p -> RelPathPrefix -> Path s (Rel d1) t) ->
+  [Char] ->
+  (FilePath -> m p) ->
+  FilePath ->
+  m (Path s (Rel d1) t)
+parseRelFP _ _ _ "" = error "can't parse empty path"
+parseRelFP constructor validSeparators pathParser fp = do
   let (prefix, fp') = extractRelPathPrefix validSeparators fp
       fp'' = if fp' == "" then "." else fp' -- Because Path Rel parsers can't handle just "".
-   in (\p -> constructor p prefix) <$> pathParser fp''
+  (\p -> constructor p prefix) <$> pathParser fp''
 
 -- | Extracts a multiple "../" from start of the file path.
 --   If path is completely ../../.., also handles the last one.

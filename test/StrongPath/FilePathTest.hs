@@ -112,5 +112,20 @@ spec_StrongPathFilePath = do
     test (parseRelDirW "../") "..\\"
     test (parseRelDirP "../") "../"
 
+  it "Parsing empty paths should fail" $ do
+    let test parser p = parser p `shouldBe` Nothing
+    test parseRelDir ""
+    test parseRelFile ""
+    test parseAbsDir ""
+    test parseAbsFile ""
+    test parseRelDirP ""
+    test parseRelFileP ""
+    test parseAbsDirP ""
+    test parseAbsFileP ""
+    test parseRelDirW ""
+    test parseRelFileW ""
+    test parseAbsDirW ""
+    test parseAbsFileW ""
+
 systemSpRoot :: Path' Abs Dir'
 systemSpRoot = fromJust $ parseAbsDir systemFpRoot

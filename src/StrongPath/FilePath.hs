@@ -103,27 +103,27 @@ parseRelFileP :: MonadThrow m => FilePath -> m (Path Posix (Rel d) (File f))
 parseAbsDirP :: MonadThrow m => FilePath -> m (Path Posix Abs (Dir d))
 parseAbsFileP :: MonadThrow m => FilePath -> m (Path Posix Abs (File f))
 ---- System
-parseRelDir = parseRelFP RelDir [FP.pathSeparator, FPP.pathSeparator] P.parseRelDir
+parseRelDir = parseRelDirFP RelDir [FP.pathSeparator, FPP.pathSeparator] P.parseRelDir
 
-parseRelFile = parseRelFP RelFile [FP.pathSeparator, FPP.pathSeparator] P.parseRelFile
+parseRelFile = parseRelFileFP RelFile [FP.pathSeparator, FPP.pathSeparator] P.parseRelFile
 
 parseAbsDir fp = fromPathAbsDir <$> P.parseAbsDir fp
 
 parseAbsFile fp = fromPathAbsFile <$> P.parseAbsFile fp
 
 ---- Windows
-parseRelDirW = parseRelFP RelDirW [FPW.pathSeparator, FPP.pathSeparator] PW.parseRelDir
+parseRelDirW = parseRelDirFP RelDirW [FPW.pathSeparator, FPP.pathSeparator] PW.parseRelDir
 
-parseRelFileW = parseRelFP RelFileW [FPW.pathSeparator, FPP.pathSeparator] PW.parseRelFile
+parseRelFileW = parseRelFileFP RelFileW [FPW.pathSeparator, FPP.pathSeparator] PW.parseRelFile
 
 parseAbsDirW fp = fromPathAbsDirW <$> PW.parseAbsDir fp
 
 parseAbsFileW fp = fromPathAbsFileW <$> PW.parseAbsFile fp
 
 ---- Posix
-parseRelDirP = parseRelFP RelDirP [FPP.pathSeparator] PP.parseRelDir
+parseRelDirP = parseRelDirFP RelDirP [FPP.pathSeparator] PP.parseRelDir
 
-parseRelFileP = parseRelFP RelFileP [FPP.pathSeparator] PP.parseRelFile
+parseRelFileP = parseRelFileFP RelFileP [FPP.pathSeparator] PP.parseRelFile
 
 parseAbsDirP fp = fromPathAbsDirP <$> PP.parseAbsDir fp
 
