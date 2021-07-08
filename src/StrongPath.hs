@@ -3,20 +3,48 @@ module StrongPath
 
     -- | This library provides a strongly typed representation of file paths, providing more safety during compile time while also making code more readable, compared to the standard solution ("System.FilePath").
     --
-    -- Example of using "System.FilePath" vs using "StrongPath" to describe the path to git config file (relative to the home directory):
+    -- Example of using "System.FilePath" vs using "StrongPath" to get the path to bash profile file (relative to the home directory):
     --
-    -- > getBashProfile :: IO FilePath
+    -- > -- Using FilePath
+    -- > getBashProfilePath :: IO FilePath
     --
-    -- > getBashProfile :: IO (Path System (Rel HomeDir) (File BashProfile))
+    -- This leaves many questions open. Is returned path relative or absolute? If relative, what is it relative to? Is it normalized? Is it maybe invalid? What kind of separators (win, posix) does it use?
     --
-    -- Or, imagine stumbling onto this function:
+    -- > -- Using StrongPath
+    -- > getBashProfilePath :: IO (Path System (Rel HomeDir) (File BashProfile))
     --
-    -- > generateHtmlFromMarkdown :: FilePath -> IO FilePath
+    -- With StrongPath, you can read from type that it is relative to home directory, you are guaranteed it is normalized and valid, and type also tells you it is using separators of the OS your program is running on.
     --
-    -- What kind of path does it take - relative, absolute? If relative, to what is it relative? What kind of path does it return? Do paths in question follow Posix or Windows standard?
-    -- With "StrongPath", same function could look like this:
+    -- Some more examples:
     --
-    -- > generateHtmlFromMarkdown :: Path System (Rel HomeDir) (File MarkdownFile) -> IO (Path System Abs (File HtmlFile))
+    -- > -- System path to "foo" directory, relative to "bar" directory.
+    -- > dirFooInDirBar :: Path System (Rel BarDir) (Dir FooDir)
+    -- > dirFooInDirBar = [reldir|somedir/foo|]  -- This path is parsed during compile time, ensuring it is valid.
+    -- >
+    -- > -- Absolute system path to "bar" directory. `Path'` is just alias for `Path System`.
+    -- > dirBarAbsPath :: Path' Abs (Dir BarDir)
+    -- > dirBarAbsPath = [absdir|/bar/|]
+    -- >
+    -- > -- Absolute path to "foo" directory, calculated by concatenating two paths from above.
+    -- > -- If path on the right was not relative to the path on the left, StrongPath would throw compile error upon concatenation.
+    -- > dirFooAbsPath :: Path' Abs (Dir FooDir)
+    -- > dirFooAbsPath = dirBarAbsPath </> dirFooInDirBar
+    -- >
+    -- > -- Posix path to "unnamed" file, relative to "foo" directory.
+    -- > someFile :: Path Posix (Rel FooDir) File ()
+    -- > someFile = [relfileP|some/file.txt|]
+    -- >
+    -- > dirHome :: Path System Abs (Dir HomeDir)
+    -- > dirHome :: [absdir|/home/john/|]
+    -- >
+    -- > dirFooCopiedToHomeAsInBar :: Path System Abs (Dir FooDir)
+    -- > dirFooCopiedToHomeAsInBar = dirHome </> castRel dirFooInDirBar
+    -- >
+    -- > data BarDir  -- Represents Bar directory.
+    -- > data FooDir  -- Represents Foo directory.
+    -- > data HomeDir -- Represents Home directory.
+    --
+    --
     --
     -- Basic idea is that working with 'FilePath' (which is just an alias for String
     -- and is a default type for representing file paths in Haskell) is too clumsy
@@ -201,35 +229,6 @@ module StrongPath
     -- > someRelPath :: Path System (Rel SomeDir) (File SomeFle)
     -- > someRelPath = [SP.relfile|../foo/myfile.txt|]
 
-    -- *** Some more examples
-
-    -- |
-    -- > -- System path to "foo" directory, relative to "bar" directory.
-    -- > dirFooInDirBar :: Path System (Rel BarDir) (Dir FooDir)
-    -- > dirFooInDirBar = [reldir|somedir/foo|]
-    -- >
-    -- > -- Abs system path to "bar" directory.
-    -- > dirBarAbsPath :: Path System Abs (Dir BarDir)
-    -- > dirBarAbsPath = [absdir|/bar/|]
-    -- >
-    -- > -- Abs path to "foo" directory.
-    -- > dirFooAbsPath :: Path System Abs (Dir FooDir)
-    -- > dirFooAbsPath = dirBarAbsPath </> dirFooInDirBar
-    -- >
-    -- > -- Posix path to "unnamed" file, relative to "foo" directory.
-    -- > someFile :: Path Posix (Rel FooDir) File ()
-    -- > someFile = [relfileP|some/file.txt|]
-    -- >
-    -- > dirHome :: Path System Abs (Dir HomeDir)
-    -- > dirHome :: [absdir|/home/john/|]
-    -- >
-    -- > dirFooCopiedToHomeAsInBar :: Path System Abs (Dir FooDir)
-    -- > dirFooCopiedToHomeAsInBar = dirHome </> castRel dirFooInDirBar
-    -- >
-    -- > data BarDir  -- Represents Bar directory.
-    -- > data FooDir  -- Represents Foo directory.
-    -- > data HomeDir -- Represents Home directory.
-
     -- ** Inspiration
 
     -- |
@@ -242,6 +241,20 @@ module StrongPath
     -- - Support at type level for describing what are relative paths exactly relative to,
     --   so you e.g. can't concatenate wrong paths.
     -- - Support for @..\/@ at start of relative path.
+
+    -- ** StrongPath in practice
+
+    -- |
+    -- - "StrongPath" is used extensively in [wasp-lang](https://github.com/wasp-lang/wasp/search?q=StrongPath).
+
+    -- ** Similar libraries
+
+    -- |
+    -- - [path](https://hackage.haskell.org/package/path) - Inspiration for StrongPath. Has less information encoded in types than StrongPath but is therefore somewhat simpler to use.
+    -- - [data-filepath](https://hackage.haskell.org/package/data-filepath) - Similar to `path`. Check https://github.com/commercialhaskell/path#data-filepath for detailed comparison to `path`.
+    -- - [pathtype](https://hackage.haskell.org/package/pathtype) - Similar to `path`. Check https://github.com/commercialhaskell/path#pathtype for detailed comparison to `path`.
+    -- - [paths](https://hackage.haskell.org/package/paths) - Focused on capturing if path is relative or absolute, and to what.
+    -- - [hpath](https://hackage.haskell.org/package/hpath) - Uses ByteString under the hood (instead of String), written only for Posix, has no File/Dir distinction.
 
     -- * API
     module StrongPath.Types,
