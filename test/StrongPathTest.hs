@@ -77,6 +77,28 @@ spec_StrongPath = do
     describe "when standard is Posix" $
       tests parseRelDirP parseRelFileP parseAbsDirP parseAbsFileP "/"
 
+  describe "`basename` correctly returns filename/dirname" $ do
+    let test msp mexpectedSp =
+          it ("basename (" ++ show msp ++ ") == " ++ show mexpectedSp) $ do
+            let sp = fromJust msp
+            let expectedSp = fromJust mexpectedSp
+            basename sp `shouldBe` expectedSp
+    let tests relDirParser relFileParser absDirParser absFileParser root = do
+          test (absFileParser $ root ++ "a/b/c.txt") (relFileParser "c.txt")
+          test (absDirParser $ root ++ "a/b") (relDirParser "b")
+          test (absDirParser root) (relDirParser ".")
+          test (relFileParser "file.txt") (relFileParser "file.txt")
+          test (relFileParser "../file.txt") (relFileParser "file.txt")
+          test (relDirParser ".") (relDirParser ".")
+          test (relDirParser "..") (relDirParser "..")
+          test (relDirParser "../..") (relDirParser "..")
+    describe "when standard is System" $
+      tests parseRelDir parseRelFile parseAbsDir parseAbsFile systemFpRoot
+    describe "when standard is Windows" $
+      tests parseRelDirW parseRelFileW parseAbsDirW parseAbsFileW "C:\\"
+    describe "when standard is Posix" $
+      tests parseRelDirP parseRelFileP parseAbsDirP parseAbsFileP "/"
+
   describe "relDirToPosix/relFileToPosix correctly converts any relative path to relative posix path" $ do
     describe "when strong path is relative dir" $ do
       let expectedPosixPath = [reldirP|test/dir/|]
