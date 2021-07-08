@@ -1,9 +1,11 @@
+{-# LANGUAGE QuasiQuotes #-}
 {-# OPTIONS_HADDOCK hide #-}
 
 module StrongPath.Operations
   ( -- ** Operations
     (</>),
     parent,
+    basename,
 
     -- ** Casting
     castRel,
@@ -141,6 +143,45 @@ lsp@(AbsDirP _) </> (RelDirP rp rprefix) =
   let (AbsDirP lp') = iterate parent lsp !! prefixNumParentDirs rprefix
    in AbsDirP (lp' PP.</> rp)
 _ </> _ = impossible
+
+-- | Returns the most right member of the path once split by separators.
+-- If path is pointing to file, basename will be name of the file.
+-- If path is pointing to a directory, basename will be name of the directory.
+-- Check examples below to see how are special paths like @..@, @.@, @\/@ and similar resolved.
+--
+-- Examples (pseudocode):
+-- > basename "/a/b/c" == "c"
+-- > basename "file.txt" == "file.txt"
+-- > basename "../file.txt" == "file.txt"
+-- > basename "../.." == ".."
+-- > basename ".." == ".."
+-- > basename "." == "."
+-- > basename "/" == "."
+basename :: Path s b t -> Path s (Rel d) t
+-- System
+basename (RelDir p pr) =
+  if p == [P.reldir|.|] && pr /= NoPrefix
+    then RelDir p (ParentDir 1)
+    else RelDir (P.dirname p) NoPrefix
+basename (RelFile p _) = RelFile (P.filename p) NoPrefix
+basename (AbsDir p) = RelDir (P.dirname p) NoPrefix
+basename (AbsFile p) = RelFile (P.filename p) NoPrefix
+-- Posix
+basename (RelDirP p pr) =
+  if p == [PP.reldir|.|] && pr /= NoPrefix
+    then RelDirP p (ParentDir 1)
+    else RelDirP (PP.dirname p) NoPrefix
+basename (RelFileP p _) = RelFileP (PP.filename p) NoPrefix
+basename (AbsDirP p) = RelDirP (PP.dirname p) NoPrefix
+basename (AbsFileP p) = RelFileP (PP.filename p) NoPrefix
+-- Windows
+basename (RelDirW p pr) =
+  if p == [PW.reldir|.|] && pr /= NoPrefix
+    then RelDirW p (ParentDir 1)
+    else RelDirW (PW.dirname p) NoPrefix
+basename (RelFileW p _) = RelFileW (PW.filename p) NoPrefix
+basename (AbsDirW p) = RelDirW (PW.dirname p) NoPrefix
+basename (AbsFileW p) = RelFileW (PW.filename p) NoPrefix
 
 -- | Enables you to redefine which dir is the path relative to.
 castRel :: Path s (Rel d1) a -> Path s (Rel d2) a
