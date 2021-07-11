@@ -7,10 +7,12 @@ import StrongPath.Internal
 import qualified System.FilePath as FP
 import qualified System.FilePath.Posix as FPP
 import qualified System.FilePath.Windows as FPW
-import Test.Tasty.Hspec
+import Test.Hspec
+import Test.Tasty (TestTree)
+import Test.Tasty.Hspec (testSpec)
 
-spec_StrongPathInternal :: Spec
-spec_StrongPathInternal = do
+test_StrongPathInternal :: IO TestTree
+test_StrongPathInternal = testSpec "StrongPath.Internal" $ do
   describe "extractRelPathPrefix correctly extracts prefix from rel FilePath." $ do
     it "when path starts with multiple ../" $ do
       extractRelPathPrefix [FPP.pathSeparator] "../../" `shouldBe` (ParentDir 2, "")

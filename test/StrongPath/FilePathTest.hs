@@ -6,11 +6,13 @@ import StrongPath.Internal
 import qualified System.FilePath as FP
 import qualified System.FilePath.Posix as FPP
 import qualified System.FilePath.Windows as FPW
-import Test.Tasty.Hspec
+import Test.Hspec
+import Test.Tasty (TestTree)
+import Test.Tasty.Hspec (testSpec)
 import Test.Utils
 
-spec_StrongPathFilePath :: Spec
-spec_StrongPathFilePath = do
+test_StrongPathFilePath :: IO TestTree
+test_StrongPathFilePath = testSpec "StrongPath.FilePath" $ do
   describe "Parsing FilePath into StrongPath" $ do
     let runTest fpToParseIntoExpectedFp parser fpToParse =
           let expectedFp = fpToParseIntoExpectedFp fpToParse

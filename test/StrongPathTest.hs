@@ -4,7 +4,9 @@ module StrongPathTest where
 
 import Data.Maybe (fromJust)
 import StrongPath
-import Test.Tasty.Hspec
+import Test.Hspec
+import Test.Tasty (TestTree)
+import Test.Tasty.Hspec (testSpec)
 import Test.Utils
 
 data Bar
@@ -14,8 +16,8 @@ data Fizz
 -- TODO: I should look into using QuickCheck to simplify / enhcance StrongPath tests,
 --       it would probably be a good fit for some cases.
 
-spec_StrongPath :: Spec
-spec_StrongPath = do
+test_StrongPath :: IO TestTree
+test_StrongPath = testSpec "StrongPath" $ do
   it "Example with Foo file and Bar, Fizz and Kokolo dirs" $ do
     let fooFileInBarDir = [relfile|foo.txt|] :: Path' (Rel Bar) File'
     let barDirInFizzDir = [reldir|kokolo/bar|] :: Path' (Rel Fizz) (Dir Bar)

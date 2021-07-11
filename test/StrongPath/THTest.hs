@@ -5,10 +5,12 @@ module StrongPath.THTest where
 import Data.Maybe (fromJust)
 import qualified StrongPath as SP
 import StrongPath.TH
-import Test.Tasty.Hspec
+import Test.Hspec
+import Test.Tasty (TestTree)
+import Test.Tasty.Hspec (testSpec)
 
-spec_StrongPathTH :: Spec
-spec_StrongPathTH = do
+test_StrongPathTH :: IO TestTree
+test_StrongPathTH = testSpec "StrongPath.TH" $ do
   describe "Quasi quoters generate expected values with expected types" $ do
     it "System" $ do
       [reldir|foo/bar/|] `shouldBe` fromJust (SP.parseRelDir "foo/bar/")

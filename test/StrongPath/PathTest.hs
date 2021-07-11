@@ -8,11 +8,13 @@ import qualified Path.Posix as PP
 import qualified Path.Windows as PW
 import StrongPath.Path
 import qualified System.FilePath as FP
-import Test.Tasty.Hspec
+import Test.Hspec
+import Test.Tasty (TestTree)
+import Test.Tasty.Hspec (testSpec)
 import Test.Utils
 
-spec_StrongPathPath :: Spec
-spec_StrongPathPath = do
+test_StrongPathPath :: IO TestTree
+test_StrongPathPath = testSpec "StrongPath.Path" $ do
   it "Conversion from Path to StrongPath and back returns original value." $ do
     let test pack unpack path = unpack (pack path) == path `shouldBe` True
     test fromPathRelFile toPathRelFile [P.relfile|some/file.txt|]

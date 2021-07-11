@@ -1,5 +1,5 @@
 name:                strong-path
-version:             1.0.0.0
+version:             1.0.1.0
 github:              "wasp-lang/strong-path"
 license:             MIT
 author:              "Martin Sosic"
@@ -23,7 +23,7 @@ library:
   ghc-options:
     - -Wall
   dependencies:
-    - path == 0.9.*
+    - path >= 0.9.0
     - exceptions
     - filepath
     - template-haskell
@@ -44,3 +44,4 @@ tests:
       - tasty-discover
       - path
       - filepath
+      - hspec

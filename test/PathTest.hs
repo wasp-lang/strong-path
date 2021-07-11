@@ -7,10 +7,12 @@ import qualified Path as P
 import qualified Path.Posix as PP
 import qualified Path.Windows as PW
 import qualified System.FilePath as FP
-import Test.Tasty.Hspec
+import Test.Hspec
+import Test.Tasty (TestTree)
+import Test.Tasty.Hspec (testSpec)
 
-spec_Path :: Spec
-spec_Path = do
+test_Path :: IO TestTree
+test_Path = testSpec "Path" $ do
   -- Just checking that Path behaves in a way that we expect it to behave.
   -- At earlier versions of Path (< 0.9.0) there were bugs which made some of the tests below fail.
   -- This way we ensure those bugs are fixed and don't return.
