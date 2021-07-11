@@ -44,7 +44,22 @@ import qualified Path.Windows as PW
 -- > Path System Abs (Dir HomeDir)
 -- > Path Posix (Rel ProjectRoot) (File ())
 data Path s b t
-  = -- System
+  = -- NOTE: Relative paths can be sometimes be tricky when being reasoned about in the internal library code,
+    --   when reconstructing them and working with them, due to RelPathPrefix and edge cases like ".", "..".
+    --
+    --   For example if original relative path was "..", we will parse it into RelDir "." ParentDir 1.
+    --   Then it is important to be aware that this should be regarded as "..", and not "../.".
+    --   In some functions like `basename` it is important to be aware of this.
+    --
+    --   Also, Path.Path can't hold empty path, so we can count on paths not to be empty.
+    --
+    --   And Path.Path can't store "." as file, only as dir, so that is also good to know.
+    --
+    --   I wonder if we could find a better way to represent path internaly, a way which would encode
+    --   tricky situations explicitly, or maybe some kind of lower-level interface around it that would encode
+    --   things like "paths can't be empty", "dir can be '.' but file can't", and similar.
+    --   But maybe the solution would just be too complicated.
+    -- System
     RelDir (P.Path P.Rel P.Dir) RelPathPrefix
   | RelFile (P.Path P.Rel P.File) RelPathPrefix
   | AbsDir (P.Path P.Abs P.Dir)
@@ -149,7 +164,8 @@ parseRelDirFP ::
 parseRelDirFP _ _ _ "" = throwM (P.InvalidRelDir "")
 parseRelDirFP constructor validSeparators pathParser fp = parseRelFP constructor validSeparators pathParser fp
 
--- Helper function for the parseRelFileFP and parseRelDirFP, should not be used called directly.
+-- Helper function for the parseRelFileFP and parseRelDirFP, should not be used called directly but only
+-- by parseRelFileFP and parseRelDirFP.
 parseRelFP ::
   MonadThrow m =>
   (p -> RelPathPrefix -> Path s (Rel d1) t) ->
