@@ -102,7 +102,7 @@ jobs:
       - name: Ensure Stack is the latest version (add updated version to PATH on Windows)
         if: runner.os == 'Windows'
         run: |
-          setx path "%path%;C:\Users\runneradmin\AppData\Roaming\local\bin"
+          setx PATH "C:\Users\runneradmin\AppData\Roaming\local\bin;%PATH%"
 
       - name: Verify Haskell setup
         run: |
