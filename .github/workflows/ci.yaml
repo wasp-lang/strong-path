@@ -95,8 +95,10 @@ jobs:
 
       # We have this because hasekll/actions/setup sometimes falls behind
       # regarding the latest version of stack.
+      # TODO: Remove this once we get it working through the gh action for setting up Haskell.
       - name: Ensure Stack is the latest version
         run: |
+          setx /M path "%path%;C:\Users\runneradmin\AppData\Roaming\local\bin"
           stack upgrade
 
       - name: Verify Haskell setup
