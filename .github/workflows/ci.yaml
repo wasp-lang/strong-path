@@ -92,9 +92,9 @@ jobs:
       - name: Set up Haskell (Stack) via ghcup (Unix)
         if: runner.os == 'Linux' || runner.os == 'macOS'
         run: |
-          BOOTSTRAP_HASKELL_NONINTERACTIVE=1
-          BOOTSTRAP_HASKELL_INSTALL_STACK=1
-          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org
+          export BOOTSTRAP_HASKELL_NONINTERACTIVE=1
+          export BOOTSTRAP_HASKELL_INSTALL_STACK=1
+          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 
       - name: Set up Haskell (Stack) via ghcup (Win)
         if: runner.os == 'Windows'
