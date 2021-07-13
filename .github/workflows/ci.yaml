@@ -86,9 +86,9 @@ jobs:
         if: runner.os == 'macOS'
         run: rm -rf ~/.stack/setup-exe-cache
 
-      # Alternative to setting up Haskell via haskell/actions/setup,
-      # since haskell/actions/setup can be months late with providing the
-      # latest Stack version.
+      # We are setting up haskell via ghcup instead of using haskell/actions/setup
+      # because the mentioned gh action can be months late with the latest versions
+      # of Stack.
       - name: Set up Haskell (Stack) via ghcup (Unix)
         if: runner.os == 'Linux' || runner.os == 'macOS'
         run: |
@@ -116,6 +116,7 @@ jobs:
         run: |
           stack --numeric-version
           stack path --stack-root
+          stack ghc -- --version
           ghc --version
           
       - name: Build dependencies 
