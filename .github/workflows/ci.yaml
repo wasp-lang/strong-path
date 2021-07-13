@@ -87,12 +87,14 @@ jobs:
         run: rm -rf ~/.stack/setup-exe-cache
 
       - name: Set up Haskell (Stack) via ghcup (Unix)
+        if: runner.os == 'Linux' || runner.os == 'macOS'
         run: |
           BOOTSTRAP_HASKELL_NONINTERACTIVE=1
           BOOTSTRAP_HASKELL_INSTALL_STACK=1
           curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org
 
       - name: Set up Haskell (Stack) via ghcup (Windows)
+        if: runner.os == 'Windows'
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force
           [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
