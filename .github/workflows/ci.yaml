@@ -98,11 +98,7 @@ jobs:
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force
           [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-          $params = @{
-          Interactive = 0
-          InstallStack = 1
-          }
-          Invoke-Command -ScriptBlock ([ScriptBlock]::Create(".{$(Invoke-WebRequest https://www.haskell.org/ghcup/sh/bootstrap-haskell.ps1 -UseBasicParsing)} $(&{$args} @params)"))
+          Invoke-Command -ScriptBlock ([ScriptBlock]::Create(".{$(Invoke-WebRequest https://www.haskell.org/ghcup/sh/bootstrap-haskell.ps1 -UseBasicParsing)} -Interactive -InstallStack"))
         shell: powershell
 
       # - name: Set up Haskell (Stack)
