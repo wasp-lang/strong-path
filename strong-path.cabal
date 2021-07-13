@@ -41,10 +41,10 @@ library
   ghc-options: -Wall
   build-depends:
       base >=4.7 && <5
-    , exceptions
-    , filepath
-    , path >=0.9.0
-    , template-haskell
+    , exceptions >=0.10.4 && <1.11
+    , filepath >=1.4.2.1 && <1.5
+    , path >=0.9.0 && <0.10
+    , template-haskell >=2.17.0.0 && <2.18
   default-language: Haskell2010
 
 test-suite strong-path-test
@@ -65,11 +65,11 @@ test-suite strong-path-test
   build-depends:
       base >=4.7 && <5
     , filepath
-    , hspec
+    , hspec >=2.8.2 && <2.9
     , path
     , strong-path
-    , tasty
-    , tasty-discover
-    , tasty-hspec
-    , tasty-quickcheck
+    , tasty >=1.4.1 && <1.5
+    , tasty-discover >=4.2.2 && <4.3
+    , tasty-hspec ==1.2.*
+    , tasty-quickcheck >=0.10.1.2 && <0.11
   default-language: Haskell2010
