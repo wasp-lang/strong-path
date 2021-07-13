@@ -96,7 +96,7 @@ jobs:
       #     BOOTSTRAP_HASKELL_INSTALL_STACK=1
       #     curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org
 
-      # - name: Set up Haskell (Stack) via ghcup (Windows)
+      # - name: Set up Haskell (Stack) via ghcup (Win)
       #   if: runner.os == 'Windows'
       #   run: |
       #     Set-ExecutionPolicy Bypass -Scope Process -Force
