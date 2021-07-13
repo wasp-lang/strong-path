@@ -111,7 +111,7 @@ jobs:
           enable-stack: true
           stack-version: latest
 
-      - name: Fix for Stack not finding GHC 9.0.1 on Win: install GHC via Chocolatey
+      - name: Fix for Stack not finding GHC 9.0.1 on Win - install GHC via Chocolatey
         if: runner.os == 'Windows'
         run: |
           choco install ghc --version 9.0.1
