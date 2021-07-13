@@ -86,23 +86,40 @@ jobs:
         if: runner.os == 'macOS'
         run: rm -rf ~/.stack/setup-exe-cache
 
-      - name: Set up Haskell (Stack)
-        uses: haskell/actions/setup@v1
-        with:
-          ghc-version: latest
-          enable-stack: true
-          stack-version: latest
+      - name: Set up Haskell (Stack) via ghcup (Unix)
+        run: |
+          BOOTSTRAP_HASKELL_NONINTERACTIVE=1
+          BOOTSTRAP_HASKELL_INSTALL_STACK=1
+          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org
 
-      # We have this because hasekll/actions/setup sometimes falls behind
-      # regarding the latest version of stack.
-      # TODO: Remove this once we get it working through the gh action for setting up Haskell.
-      - name: Ensure Stack is the latest version
+      - name: Set up Haskell (Stack) via ghcup (Windows)
         run: |
-          stack upgrade
-      - name: Ensure Stack is the latest version (add updated version to PATH on Windows)
-        if: runner.os == 'Windows'
-        run: |
-          setx PATH "C:\Users\runneradmin\AppData\Roaming\local\bin;%PATH%"
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+          $params = @{
+          Interactive = $false
+          InstallStack = $true
+          }
+          Invoke-Command -ScriptBlock ([ScriptBlock]::Create(".{$(Invoke-WebRequest https://www.haskell.org/ghcup/sh/bootstrap-haskell.ps1 -UseBasicParsing)} $(&{$args} @params)"))
+        shell: powershell
+
+      # - name: Set up Haskell (Stack)
+      #   uses: haskell/actions/setup@v1
+      #   with:
+      #     ghc-version: latest
+      #     enable-stack: true
+      #     stack-version: latest
+
+      # # We have this because hasekll/actions/setup sometimes falls behind
+      # # regarding the latest version of stack.
+      # # TODO: Remove this once we get it working through the gh action for setting up Haskell.
+      # - name: Ensure Stack is the latest version
+      #   run: |
+      #     stack upgrade
+      # - name: Ensure Stack is the latest version (add updated version to PATH on Windows)
+      #   if: runner.os == 'Windows'
+      #   run: |
+      #     setx PATH "C:\Users\runneradmin\AppData\Roaming\local\bin;%PATH%"
 
       - name: Verify Haskell setup
         run: |
