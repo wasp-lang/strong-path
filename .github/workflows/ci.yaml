@@ -86,6 +86,24 @@ jobs:
         if: runner.os == 'macOS'
         run: rm -rf ~/.stack/setup-exe-cache
 
+      # # Alternative to setting up Haskell via haskell/actions/setup,
+      # # since haskell/actions/setup can be months late with providing the
+      # # latest Stack version.
+      # - name: Set up Haskell (Stack) via ghcup (Unix)
+      #   if: runner.os == 'Linux' || runner.os == 'macOS'
+      #   run: |
+      #     BOOTSTRAP_HASKELL_NONINTERACTIVE=1
+      #     BOOTSTRAP_HASKELL_INSTALL_STACK=1
+      #     curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org
+
+      # - name: Set up Haskell (Stack) via ghcup (Windows)
+      #   if: runner.os == 'Windows'
+      #   run: |
+      #     Set-ExecutionPolicy Bypass -Scope Process -Force
+      #     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+      #     Invoke-Command -ScriptBlock ([ScriptBlock]::Create(".{$(Invoke-WebRequest https://www.haskell.org/ghcup/sh/bootstrap-haskell.ps1 -UseBasicParsing)} -InstallStack"))
+      #   shell: powershell
+
       - name: Set up Haskell (Stack)
         uses: haskell/actions/setup@v1
         with:
@@ -94,16 +112,20 @@ jobs:
           stack-version: latest
 
       - name: Verify Haskell setup
+        if: runner.os == 'Linux' || runner.os == 'macOS' # TODO: Remove once I get stack working with GHC 9 on Windows.
         run: |
           stack --numeric-version
           stack path --stack-root
           ghc --version
           
       - name: Build dependencies 
+        if: runner.os == 'Linux' || runner.os == 'macOS' # TODO: Remove once I get stack working with GHC 9 on Windows.
         run: stack --install-ghc test --only-dependencies
       
       - name: Build StrongPath & Run tests
+        if: runner.os == 'Linux' || runner.os == 'macOS' # TODO: Remove once I get stack working with GHC 9 on Windows.
         run: stack test
 
       - name: Build docs
+        if: runner.os == 'Linux' || runner.os == 'macOS' # TODO: Remove once I get stack working with GHC 9 on Windows.
         run: stack haddock
