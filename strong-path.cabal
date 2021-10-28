@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           strong-path
-version:        1.0.1.1
+version:        1.1.0.0
 synopsis:       Strongly typed paths in Haskell.
 description:    Replacement for a FilePath that enables you to handle filepaths in your code in a type-safe manner. You can specify at type level if they are relative, absolute, file, directory, posix, windows, and even to which file or directory they point to or are relative to.
 category:       System, Filesystem, FilePath
@@ -41,10 +41,10 @@ library
   ghc-options: -Wall
   build-depends:
       base >=4.7 && <5
-    , exceptions >=0.10.4 && <1.11
-    , filepath >=1.4.2.1 && <1.5
-    , path >=0.9.0 && <0.10
-    , template-haskell >=2.17.0.0 && <2.18
+    , exceptions ==0.10.*
+    , filepath ==1.4.*
+    , path ==0.9.*
+    , template-haskell ==2.16.*
   default-language: Haskell2010
 
 test-suite strong-path-test
@@ -65,11 +65,11 @@ test-suite strong-path-test
   build-depends:
       base >=4.7 && <5
     , filepath
-    , hspec >=2.8.2 && <2.9
+    , hspec ==2.7.*
     , path
     , strong-path
-    , tasty >=1.4.1 && <1.5
-    , tasty-discover >=4.2.2 && <4.3
-    , tasty-hspec ==1.2.*
-    , tasty-quickcheck >=0.10.1.2 && <0.11
+    , tasty ==1.4.*
+    , tasty-discover ==4.2.*
+    , tasty-hspec ==1.1.*
+    , tasty-quickcheck ==0.10.*
   default-language: Haskell2010
