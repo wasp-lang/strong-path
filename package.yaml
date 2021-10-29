@@ -23,6 +23,11 @@ library:
   ghc-options:
     - -Wall
   dependencies:
+    # Version bounds here and in tests are defined so that they cover the latest LTS snapshot (lts-18.14) (lower bounds)
+    # and the nightly snapshot defined in stack.yaml (upper bounds).
+    # Those two are also tested in CI.
+    # In case you decide to cover a different LTS with the lower bounds,
+    # make sure to also update the CI to use the correct LTS for testing.
     - path >=0.9 && <0.10
     - exceptions >=0.10 && <0.11
     - filepath >=1.4 && <1.5
