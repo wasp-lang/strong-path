@@ -37,7 +37,7 @@ jobs:
           - macos-latest
           - windows-latest
         stack-resolver:
-          - ""
+          - from-stack-yaml
         include:
           - os: ubuntu-latest
             # This version of resolver is aligned with the lower version bounds defined in package.yaml.
@@ -121,9 +121,9 @@ jobs:
       #     stack-version: latest
 
       - name: Set Stack resolver
-        if: runner.stack-resolver != ""
+        if: matrix.stack-resolver != from-stack-yaml
         env:
-          STACK_RESOLVER: ${{ runner.stack-resolver }}
+          STACK_RESOLVER: ${{ matrix.stack-resolver }}
         run: stack config set resolver $STACK_RESOLVER
 
       - name: Verify Haskell setup
