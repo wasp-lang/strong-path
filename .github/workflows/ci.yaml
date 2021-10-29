@@ -113,12 +113,6 @@ jobs:
       #     enable-stack: true
       #     stack-version: latest
 
-      # TODO: Remove once https://github.com/commercialhaskell/stack/issues/5583 is fixed (should be fixed in stack >= 2.7.1) .
-      - name: Fix needed for Stack + Win + GHC 9.0.1
-        if: runner.os == 'Windows'
-        run: |
-          rm C:/ProgramData/Chocolatey/bin/ghc*
-
       - name: Verify Haskell setup
         run: |
           stack --numeric-version
