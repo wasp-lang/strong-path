@@ -36,6 +36,13 @@ jobs:
           - ubuntu-latest
           - macos-latest
           - windows-latest
+        stack-resolver:
+          - ""
+        include:
+          - os: ubuntu-latest
+            # This version of resolver is aligned with the lower version bounds defined in package.yaml.
+            # If you change it, make sure to adjust lower bounds there to reflect the change.
+            stack-resolver: lts-18.14
 
     steps:
       - name: Checkout the repo
@@ -112,6 +119,12 @@ jobs:
       #     ghc-version: latest
       #     enable-stack: true
       #     stack-version: latest
+
+      - name: Set Stack resolver
+        if: runner.stack-resolver != ""
+        env:
+          STACK_RESOLVER: ${{ runner.stack-resolver }}
+        run: stack config set resolver $STACK_RESOLVER
 
       - name: Verify Haskell setup
         run: |
