@@ -121,7 +121,7 @@ jobs:
       #     stack-version: latest
 
       - name: Set Stack resolver
-        if: matrix.stack-resolver != from-stack-yaml
+        if: matrix.stack-resolver != 'from-stack-yaml'
         env:
           STACK_RESOLVER: ${{ matrix.stack-resolver }}
         run: stack config set resolver $STACK_RESOLVER
