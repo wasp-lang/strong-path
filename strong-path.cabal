@@ -44,7 +44,7 @@ library
     , exceptions ==0.10.*
     , filepath ==1.4.*
     , path ==0.9.*
-    , template-haskell ==2.16.*
+    , template-haskell >=2.16 && <2.18
   default-language: Haskell2010
 
 test-suite strong-path-test
@@ -65,11 +65,11 @@ test-suite strong-path-test
   build-depends:
       base >=4.7 && <5
     , filepath
-    , hspec ==2.7.*
+    , hspec >=2.7 && <2.9
     , path
     , strong-path
     , tasty ==1.4.*
     , tasty-discover ==4.2.*
-    , tasty-hspec ==1.1.*
+    , tasty-hspec >=1.1 && <1.3
     , tasty-quickcheck ==0.10.*
   default-language: Haskell2010
