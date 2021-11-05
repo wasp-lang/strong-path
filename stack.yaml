@@ -17,6 +17,9 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
+
+# NOTE: If you modify this field, make sure to update the tested-with
+#   field in package.yaml to contain the corresponding GHC versions.
 resolver: nightly-2021-10-29
 
 # User packages to be built.

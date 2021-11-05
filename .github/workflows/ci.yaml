@@ -40,9 +40,11 @@ jobs:
           - from-stack-yaml
         include:
           - os: ubuntu-latest
-            # This version of resolver is aligned with the lower version bounds defined in package.yaml.
-            # If you change it, make sure to adjust lower bounds there to reflect the change.
-            stack-resolver: lts-18.14
+            # NOTE: This version of resolver is aligned with the lower version bounds defined in package.yaml.
+            #   If you change it, make sure to adjust lower bounds there to reflect the change.
+            #   Also, make sure to adjust tested-with field in package.yaml so that it contains
+            #   corresponding GHC version.
+            stack-resolver: lts-18.15
 
     steps:
       - name: Checkout the repo

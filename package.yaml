@@ -15,6 +15,8 @@ category:            System, Filesystem, FilePath
 
 description:         Replacement for a FilePath that enables you to handle filepaths in your code in a type-safe manner. You can specify at type level if they are relative, absolute, file, directory, posix, windows, and even to which file or directory they point to or are relative to.
 
+tested-with: GHC == 8.10.7, GHC == 9.0.1  # lts-18.15, nightly-2021-10-29
+
 dependencies:
   - base >= 4.7 && < 5
 
@@ -23,11 +25,13 @@ library:
   ghc-options:
     - -Wall
   dependencies:
-    # Version bounds here and in tests are defined so that they cover the latest LTS snapshot (lts-18.14) (lower bounds)
-    # and the nightly snapshot defined in stack.yaml (upper bounds).
-    # Those two are also tested in CI.
-    # In case you decide to cover a different LTS with the lower bounds,
-    # make sure to also update the CI to use the correct LTS for testing.
+    # NOTE: Version bounds here and in tests are defined so that they cover the latest LTS snapshot
+    #   (lts-18.15) (lower bounds) and the nightly snapshot defined in stack.yaml (upper bounds).
+    #   Those two are also tested in the CI, and corresponding GHC versions are mentioned above
+    #   in the tested-with field.
+    #   In case you decide to cover a different LTS with the lower bounds,
+    #   make sure to also update the CI to use the correct LTS for testing and also update
+    #   tested-with field above.
     - path >=0.9 && <0.10
     - exceptions >=0.10 && <0.11
     - filepath >=1.4 && <1.5

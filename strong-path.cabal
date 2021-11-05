@@ -17,6 +17,8 @@ copyright:      2020 Martin Sosic
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
+tested-with:
+    GHC == 8.10.7, GHC == 9.0.1
 extra-source-files:
     README.md
     ChangeLog.md
