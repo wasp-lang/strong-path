@@ -44,7 +44,7 @@ jobs:
             #   If you change it, make sure to adjust lower bounds there to reflect the change.
             #   Also, make sure to adjust tested-with field in package.yaml so that it contains
             #   corresponding GHC version.
-            stack-resolver: lts-18.15
+            stack-resolver: lts-18.21
 
     steps:
       - name: Checkout the repo
