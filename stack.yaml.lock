@@ -3,17 +3,17 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages:
-- completed:
-    hackage: path-0.9.0@sha256:47cecc18427640e2c465ae254d4fb4342ec75b47119567e2423d61f98cccdeb3,3273
-    pantry-tree:
-      size: 1205
-      sha256: 2f7f351c101ca16659bca8de3bdf0db4450cbc901e1ecb8c3ab3d8e0aed25a0c
-  original:
-    hackage: path-0.9.0
 snapshots:
-- completed:
-    size: 596363
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2021/11/15.yaml
-    sha256: 4eb51ee07b71a0e11a4a9d32020ce6a5305e5a2f17da739afecdf7e876c78fec
-  original: nightly-2021-11-15
+- original: nightly-2022-01-04
+  completed:
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2022/1/4.yaml
+    sha256: ea584edfba307b5a88b51fc1db7c0c1b7da5f714fd30d69699fc78e3e1ce5212
+    size: 623654
+packages:
+- original:
+    hackage: path-0.9.2
+  completed:
+    pantry-tree:
+      sha256: 2acf94a62daeeb0aee9b77d044ece55b5e03445b574e6980a2e84a5a514f5517
+      size: 1206
+    hackage: path-0.9.2@sha256:2f2a7f01737cd350b30381b619e1a862601c83f10ede4d6935f76f66e63ae0c7,3273

@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveLift #-}
 
 module StrongPath.Internal
@@ -25,6 +26,7 @@ module StrongPath.Internal
 where
 
 import Control.Monad.Catch (MonadThrow, throwM)
+import Data.Data (Data)
 import Language.Haskell.TH.Syntax (Lift)
 import qualified Path as P
 import qualified Path.Posix as PP
@@ -74,29 +76,29 @@ data Path s b t
   | RelFileP (PP.Path PP.Rel PP.File) RelPathPrefix
   | AbsDirP (PP.Path PP.Abs PP.Dir)
   | AbsFileP (PP.Path PP.Abs PP.File)
-  deriving (Show, Eq, Lift)
+  deriving (Show, Eq, Lift, Data)
 
 data RelPathPrefix
   = -- | ../, Int saying how many times it repeats.
     ParentDir Int
   | NoPrefix
-  deriving (Show, Eq, Lift)
+  deriving (Show, Eq, Lift, Data)
 
 -- | Describes 'Path' base as absolute.
-data Abs deriving (Lift)
+data Abs deriving (Lift, Data)
 
 -- | Describes 'Path' base as relative to the directory @dir@.
-data Rel dir deriving (Lift)
+data Rel dir deriving (Lift, Data)
 
 -- | Means that path points to a directory @dir@.
 -- To use as a type in place of @dir@, we recommend creating an empty
 -- data type representing the specific directory, e.g. @data ProjectRootDir@.
-data Dir dir deriving (Lift)
+data Dir dir deriving (Lift, Data)
 
 -- | Means that path points to a file @file@.
 -- To use as a type in place of @file@, we recommend creating an empty
 -- data type representing the specific file, e.g. @data ProjectManifestFile@.
-data File file deriving (Lift)
+data File file deriving (Lift, Data)
 
 -- | Describes 'Path' standard as posix (e.g. @\/path\/to\/foobar@).
 -- This makes 'Path' behave in system-independent fashion: code behaves the same
@@ -106,11 +108,11 @@ data File file deriving (Lift)
 -- For example, if you are running your Haskell program on Windows and parsing logs which
 -- were obtained from the Linux server, or maybe you are parsing Javascript import statements,
 -- you will want to use 'Posix'.
-data Posix deriving (Lift)
+data Posix deriving (Lift, Data)
 
 -- | Describes 'Path' standard as windows (e.g. @C:\\path\\to\\foobar@).
 -- Check 'Posix' for more details, everything is analogous.
-data Windows deriving (Lift)
+data Windows deriving (Lift, Data)
 
 -- | Describes 'Path' standard to be determined by the system/OS.
 --
@@ -125,7 +127,7 @@ data Windows deriving (Lift)
 -- (where your code is running), for example if user is providing you with the path to the file on the disk
 -- that you will be doing something with.
 -- Keep in mind that 'System' causes the behaviour of 'Path' to be system/platform-dependant.
-data System deriving (Lift) -- Depends on the platform, it is either Posix or Windows.
+data System deriving (Lift, Data) -- Depends on the platform, it is either Posix or Windows.
 
 -- | 'System' is the most commonly used standard, so we provide you with a type alias for it.
 type Path' = Path System
