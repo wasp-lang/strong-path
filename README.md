@@ -50,10 +50,10 @@ We are using `ormolu` for code formatting. In order for the PR to pass, it needs
 
 ### Publishing to Hackage
 
-`stack sdist` to build publishable .tar.gz., and then we need to upload it manually to Hackage.
+First, make sure to update the version of package in package.yaml, if needed.
+
+Then, `stack sdist` to build publishable .tar.gz., and then we need to upload it manually to Hackage.
 
 Check if Hackage correctly built the Haddock docs -> if not, you need to upload them manually (check Hackage webpage for instructions, it should be smth like `cabal v2-haddock --haddock-for-hackage --enable-doc` and then `cabal upload -d --publish <path_to_docs.tar.gz>`).
-
-Make sure to update the version of package in package.yaml.
 
 We should also tag the commit in git with version tag (e.g. v1.0.0.0) so we know which version of code was used to produce that release.
