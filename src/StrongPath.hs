@@ -270,6 +270,7 @@ module StrongPath
 where
 
 import StrongPath.FilePath
+import StrongPath.Instances ()
 import StrongPath.Operations
 import StrongPath.TH
 import StrongPath.Types
