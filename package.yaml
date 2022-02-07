@@ -36,6 +36,7 @@ library:
     - exceptions >=0.10 && <0.11
     - filepath >=1.4 && <1.5
     - template-haskell >=2.16 && <2.18
+    - hashable >=1.3 && < 1.4
 
 tests:
   strong-path-test:
@@ -49,6 +50,7 @@ tests:
       - strong-path
       - path
       - filepath
+      - hashable >=1.3 && < 1.4
       - tasty >=1.4 && <1.5
       - tasty-hspec >=1.1 && <1.3
       - tasty-quickcheck >=0.10 && <0.11
