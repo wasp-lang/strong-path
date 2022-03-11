@@ -1,6 +1,7 @@
 module StrongPath.InstanceTest where
 
 import Data.Hashable
+import Data.List (sort)
 import StrongPath
 import Test.Hspec
 import Test.Tasty (TestTree)
@@ -17,3 +18,13 @@ test_StrongPathInstance = testSpec "StrongPath.Instance" $ do
     bPath <- parseRelDir "b"
     abPath <- parseRelDir "a/b"
     hash (aPath </> bPath) `shouldBe` hash abPath
+  it "Paths can be compared" $ do
+    aPath <- parseRelDir "a"
+    bPath <- parseRelDir "b"
+    aPath < bPath `shouldBe` True
+    aPath > bPath `shouldBe` False
+  it "Path can be sorted because they can be compared" $ do
+    aPath <- parseRelDir "a"
+    bPath <- parseRelDir "b"
+    abPath <- parseRelDir "a/b"
+    sort [bPath, abPath, aPath] `shouldBe` [aPath, abPath, bPath]

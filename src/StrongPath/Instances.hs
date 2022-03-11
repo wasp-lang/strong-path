@@ -7,7 +7,7 @@ import StrongPath.FilePath
 import StrongPath.Types
 
 -- Hashable instance for Path declared here, as an orphaned instance, instead of
--- in StronPath.Internal to avoid cyclic dependency between StrongPath.FilePath
+-- in StrongPath.Internal to avoid cyclic dependency between StrongPath.FilePath
 -- and StrongPath.Internal. (This cycle would arise due to the use of
 -- `toFilePath` from FilePath in the instance declaration and the dependency of
 -- the FilePath module on the types from the Internal module)
@@ -18,3 +18,7 @@ import StrongPath.Types
 -- they are different paths.
 instance Hashable (Path s b t) where
   hashWithSalt salt = hashWithSalt salt . toFilePath
+
+-- Paths can be compared
+instance Ord (Path s b t) where
+  compare p1 p2 = compare (toFilePath p1) (toFilePath p2)
