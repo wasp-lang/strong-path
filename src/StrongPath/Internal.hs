@@ -42,7 +42,7 @@ import qualified Path.Windows as PW
 --
 -- Some examples:
 --
--- > Path System (Dir HomeDir) (File FooFile)
+-- > Path System (Rel HomeDir) (File FooFile)
 -- > Path System Abs (Dir HomeDir)
 -- > Path Posix (Rel ProjectRoot) (File ())
 data Path s b t
