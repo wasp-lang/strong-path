@@ -1,0 +1,8 @@
+ignore-project: False
+tests: True
+
+package *
+  ghc-location: ghc-9.2.8
+
+program-locations
+  ghc-location: ghc-9.2.8
