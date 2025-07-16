@@ -90,32 +90,12 @@ jobs:
         if: runner.os == 'macOS'
         run: rm -rf ~/.stack/setup-exe-cache
 
-      # We are setting up haskell via ghcup instead of using haskell/actions/setup
-      # because the mentioned gh action can be months late with the latest versions
-      # of Stack.
-      - name: Set up Haskell (Stack) via ghcup (Unix)
-        if: runner.os == 'Linux' || runner.os == 'macOS'
-        run: |
-          export BOOTSTRAP_HASKELL_NONINTERACTIVE=1
-          export BOOTSTRAP_HASKELL_INSTALL_STACK=1
-          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
-
-      - name: Set up Haskell (Stack) via ghcup (Win)
-        if: runner.os == 'Windows'
-        run: |
-          Set-ExecutionPolicy Bypass -Scope Process -Force
-          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-          Invoke-Command -ScriptBlock ([ScriptBlock]::Create(".{$(Invoke-WebRequest https://www.haskell.org/ghcup/sh/bootstrap-haskell.ps1 -UseBasicParsing)} -InstallStack"))
-        shell: powershell
-
-      # NOTE: I commented out this in favor of manual setup above, since with this action we
-      #       couldn't get the latest version of Stack.
-      # - name: Set up Haskell (Stack)
-      #   uses: haskell/actions/setup@v1
-      #   with:
-      #     ghc-version: latest
-      #     enable-stack: true
-      #     stack-version: latest
+      - name: Set up Haskell (Stack)
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: latest
+          enable-stack: true
+          stack-version: latest
 
       - name: Set Stack resolver
         if: matrix.stack-resolver != 'from-stack-yaml'
