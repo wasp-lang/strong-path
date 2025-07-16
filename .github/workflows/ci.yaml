@@ -5,20 +5,15 @@ on:
   pull_request: { branches: [main] }
   create: { tags: [v*] }
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: bash
 
 jobs:
-  cancel:
-    name: Cancel redundant actions already in progress
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cancel actions in progress of same workflow and same branch
-        uses: styfle/cancel-workflow-action@0.12.1
-        with:
-          access_token: ${{ github.token }}
-
   # Check that Haskell code is formatted.
   code-formatter:
     runs-on: ubuntu-latest
