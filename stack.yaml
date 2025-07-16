@@ -45,6 +45,8 @@ packages:
 #
 extra-deps:
   - path-0.9.2
+  - aeson-2.2.3.0@sha256:7d48c2395ef168d2c2070fdb02c7998384be27d31a03bb35d1740af4a19a857b,6368
+  - hashable-1.3.5.0@sha256:3a2beeafb220f9de706568a7e4a5b3c762cc4c9f25c94d7ef795b8c2d6a691d7,4240
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
