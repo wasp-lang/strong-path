@@ -90,18 +90,18 @@ import qualified System.FilePath.Windows as FPW
 -- and work both on Linux and Windows when using `System` as a standard.
 -- So Posix becames a kind of \"universal\" language for hardcoding the paths.
 
-parseRelDir :: MonadThrow m => FilePath -> m (Path System (Rel d1) (Dir d2))
-parseRelFile :: MonadThrow m => FilePath -> m (Path System (Rel d) (File f))
-parseAbsDir :: MonadThrow m => FilePath -> m (Path System Abs (Dir d))
-parseAbsFile :: MonadThrow m => FilePath -> m (Path System Abs (File f))
-parseRelDirW :: MonadThrow m => FilePath -> m (Path Windows (Rel d1) (Dir d2))
-parseRelFileW :: MonadThrow m => FilePath -> m (Path Windows (Rel d) (File f))
-parseAbsDirW :: MonadThrow m => FilePath -> m (Path Windows Abs (Dir d))
-parseAbsFileW :: MonadThrow m => FilePath -> m (Path Windows Abs (File f))
-parseRelDirP :: MonadThrow m => FilePath -> m (Path Posix (Rel d1) (Dir d2))
-parseRelFileP :: MonadThrow m => FilePath -> m (Path Posix (Rel d) (File f))
-parseAbsDirP :: MonadThrow m => FilePath -> m (Path Posix Abs (Dir d))
-parseAbsFileP :: MonadThrow m => FilePath -> m (Path Posix Abs (File f))
+parseRelDir :: (MonadThrow m) => FilePath -> m (Path System (Rel d1) (Dir d2))
+parseRelFile :: (MonadThrow m) => FilePath -> m (Path System (Rel d) (File f))
+parseAbsDir :: (MonadThrow m) => FilePath -> m (Path System Abs (Dir d))
+parseAbsFile :: (MonadThrow m) => FilePath -> m (Path System Abs (File f))
+parseRelDirW :: (MonadThrow m) => FilePath -> m (Path Windows (Rel d1) (Dir d2))
+parseRelFileW :: (MonadThrow m) => FilePath -> m (Path Windows (Rel d) (File f))
+parseAbsDirW :: (MonadThrow m) => FilePath -> m (Path Windows Abs (Dir d))
+parseAbsFileW :: (MonadThrow m) => FilePath -> m (Path Windows Abs (File f))
+parseRelDirP :: (MonadThrow m) => FilePath -> m (Path Posix (Rel d1) (Dir d2))
+parseRelFileP :: (MonadThrow m) => FilePath -> m (Path Posix (Rel d) (File f))
+parseAbsDirP :: (MonadThrow m) => FilePath -> m (Path Posix Abs (Dir d))
+parseAbsFileP :: (MonadThrow m) => FilePath -> m (Path Posix Abs (File f))
 ---- System
 parseRelDir = parseRelDirFP RelDir [FP.pathSeparator, FPP.pathSeparator] P.parseRelDir
 

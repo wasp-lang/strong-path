@@ -233,7 +233,7 @@ castFile _ = impossible
 -- Works well for \"normal\" relative paths like @\"a\\b\\c\"@ (Win) or @\"a\/b\/c\"@ (Posix).
 -- If path is weird but still considered relative, like just @\"C:\"@ on Win,
 -- results can be unexpected, most likely resulting with error thrown.
-relDirToPosix :: MonadThrow m => Path s (Rel d1) (Dir d2) -> m (Path Posix (Rel d1) (Dir d2))
+relDirToPosix :: (MonadThrow m) => Path s (Rel d1) (Dir d2) -> m (Path Posix (Rel d1) (Dir d2))
 relDirToPosix sp@(RelDir _ _) = parseRelDirP $ FPP.joinPath $ FP.splitDirectories $ toFilePath sp
 relDirToPosix sp@(RelDirW _ _) = parseRelDirP $ FPP.joinPath $ FPW.splitDirectories $ toFilePath sp
 relDirToPosix (RelDirP p pr) = return $ RelDirP p pr
@@ -241,7 +241,7 @@ relDirToPosix _ = impossible
 
 -- | Converts relative file path to posix, if it is not already posix.
 -- Check 'relDirToPosix' for more details, they behave the same.
-relFileToPosix :: MonadThrow m => Path s (Rel d1) (File f) -> m (Path Posix (Rel d1) (File f))
+relFileToPosix :: (MonadThrow m) => Path s (Rel d1) (File f) -> m (Path Posix (Rel d1) (File f))
 relFileToPosix sp@(RelFile _ _) = parseRelFileP $ FPP.joinPath $ FP.splitDirectories $ toFilePath sp
 relFileToPosix sp@(RelFileW _ _) = parseRelFileP $ FPP.joinPath $ FPW.splitDirectories $ toFilePath sp
 relFileToPosix (RelFileP p pr) = return $ RelFileP p pr

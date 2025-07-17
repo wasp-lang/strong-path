@@ -147,7 +147,7 @@ type File' = File ()
 -- TODO: Extract `parseRelFileFP`, `parseRelDirFP`, `parseRelFP` and `extractRelPathPrefix` into StrongPath.FilePath.Internals?
 
 parseRelFileFP ::
-  MonadThrow m =>
+  (MonadThrow m) =>
   (p -> RelPathPrefix -> Path s (Rel d) (File f)) ->
   [Char] ->
   (FilePath -> m p) ->
@@ -157,7 +157,7 @@ parseRelFileFP _ _ _ "" = throwM (P.InvalidRelFile "")
 parseRelFileFP constructor validSeparators pathParser fp = parseRelFP constructor validSeparators pathParser fp
 
 parseRelDirFP ::
-  MonadThrow m =>
+  (MonadThrow m) =>
   (p -> RelPathPrefix -> Path s (Rel d1) (Dir d2)) ->
   [Char] ->
   (FilePath -> m p) ->
@@ -169,7 +169,7 @@ parseRelDirFP constructor validSeparators pathParser fp = parseRelFP constructor
 -- Helper function for the parseRelFileFP and parseRelDirFP, should not be used called directly but only
 -- by parseRelFileFP and parseRelDirFP.
 parseRelFP ::
-  MonadThrow m =>
+  (MonadThrow m) =>
   (p -> RelPathPrefix -> Path s (Rel d1) t) ->
   [Char] ->
   (FilePath -> m p) ->
@@ -198,8 +198,8 @@ extractRelPathPrefix validSeparators path =
     dropParentDirs :: FilePath -> (Int, FilePath)
     dropParentDirs p
       | pathStartsWithParentDir p =
-        let (n, p') = dropParentDirs (drop 3 p)
-         in (1 + n, p')
+          let (n, p') = dropParentDirs (drop 3 p)
+           in (1 + n, p')
       | p == ".." = (1, "")
       | otherwise = (0, p)
 
