@@ -30,7 +30,8 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
+          # macos-latest is only ARM, when we update to a newer haskell we can run on it
+          - macos-13
           - windows-latest
         stack-resolver:
           - from-stack-yaml
