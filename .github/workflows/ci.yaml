@@ -51,7 +51,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Cache (Unix)
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         if: runner.os == 'Linux' || runner.os == 'macOS'
         with:
           path: |
