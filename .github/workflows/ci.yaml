@@ -77,7 +77,7 @@ jobs:
           restore-keys: |
             haskell-${{ runner.os }}-${{ hashFiles('stack.yaml') }}-
       - name: Cache (Windows)
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         if: runner.os == 'Windows'
         with:
           # C\:sr is where stack installs compiled dependencies.
