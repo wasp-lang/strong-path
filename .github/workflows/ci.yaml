@@ -26,6 +26,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: code-formatter
     strategy:
+      fail-fast: false
       matrix:
         os:
           - ubuntu-latest
