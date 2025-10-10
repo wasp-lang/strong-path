@@ -20,7 +20,7 @@
 
 # NOTE: If you modify this field, make sure to update the tested-with
 #   field in package.yaml to contain the corresponding GHC versions.
-resolver: lts-21.7
+resolver: lts-22.44
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
