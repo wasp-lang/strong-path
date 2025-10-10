@@ -5,20 +5,15 @@ on:
   pull_request: { branches: [main] }
   create: { tags: [v*] }
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: bash
 
 jobs:
-  cancel:
-    name: Cancel redundant actions already in progress
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cancel actions in progress of same workflow and same branch
-        uses: styfle/cancel-workflow-action@0.9.0
-        with:
-          access_token: ${{ github.token }}
-
   # Check that Haskell code is formatted.
   code-formatter:
     runs-on: ubuntu-latest
@@ -31,6 +26,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: code-formatter
     strategy:
+      fail-fast: false
       matrix:
         os:
           - ubuntu-latest
@@ -44,11 +40,15 @@ jobs:
             #   If you change it, make sure to adjust lower bounds there to reflect the change.
             #   Also, make sure to adjust tested-with field in package.yaml so that it contains
             #   corresponding GHC version.
+<<<<<<< HEAD
             stack-resolver: lts-22.44
+=======
+            stack-resolver: lts-19.33 
+>>>>>>> @{-1}
 
     steps:
       - name: Checkout the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Cache (Unix)
         uses: actions/cache@v4
@@ -77,7 +77,7 @@ jobs:
           restore-keys: |
             haskell-${{ runner.os }}-${{ hashFiles('stack.yaml') }}-
       - name: Cache (Windows)
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         if: runner.os == 'Windows'
         with:
           # C\:sr is where stack installs compiled dependencies.
@@ -98,29 +98,28 @@ jobs:
       # We are setting up haskell via ghcup instead of using haskell/actions/setup
       # because the mentioned gh action can be months late with the latest versions
       # of Stack.
-      - name: Set up Haskell (Stack) via ghcup (Unix)
-        if: runner.os == 'Linux' || runner.os == 'macOS'
-        run: |
-          export BOOTSTRAP_HASKELL_NONINTERACTIVE=1
-          export BOOTSTRAP_HASKELL_INSTALL_STACK=1
-          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
-
-      - name: Set up Haskell (Stack) via ghcup (Win)
-        if: runner.os == 'Windows'
-        run: |
-          Set-ExecutionPolicy Bypass -Scope Process -Force
-          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-          Invoke-Command -ScriptBlock ([ScriptBlock]::Create(".{$(Invoke-WebRequest https://www.haskell.org/ghcup/sh/bootstrap-haskell.ps1 -UseBasicParsing)} -InstallStack"))
-        shell: powershell
+      # - name: Set up Haskell (Stack) via ghcup (Unix)
+      #   if: runner.os == 'Linux' || runner.os == 'macOS'
+      #   run: |
+      #     export BOOTSTRAP_HASKELL_NONINTERACTIVE=1
+      #     export BOOTSTRAP_HASKELL_INSTALL_STACK=1
+      #     curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+      #
+      # - name: Set up Haskell (Stack) via ghcup (Win)
+      #   if: runner.os == 'Windows'
+      #   run: |
+      #     Set-ExecutionPolicy Bypass -Scope Process -Force
+      #     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+      #     Invoke-Command -ScriptBlock ([ScriptBlock]::Create(".{$(Invoke-WebRequest https://www.haskell.org/ghcup/sh/bootstrap-haskell.ps1 -UseBasicParsing)} -InstallStack"))
+      #   shell: powershell
 
       # NOTE: I commented out this in favor of manual setup above, since with this action we
       #       couldn't get the latest version of Stack.
-      # - name: Set up Haskell (Stack)
-      #   uses: haskell/actions/setup@v1
-      #   with:
-      #     ghc-version: latest
-      #     enable-stack: true
-      #     stack-version: latest
+      - uses: haskell-actions/setup@v2
+        with:
+          ghc-version: latest
+          enable-stack: true
+          stack-version: latest
 
       - name: Set Stack resolver
         if: matrix.stack-resolver != 'from-stack-yaml'
@@ -134,10 +133,10 @@ jobs:
           stack path --stack-root
           stack ghc -- --version
           ghc --version
-          
-      - name: Build dependencies 
+
+      - name: Build dependencies
         run: stack --install-ghc test --only-dependencies
-      
+
       - name: Build StrongPath & Run tests
         run: stack test
 
