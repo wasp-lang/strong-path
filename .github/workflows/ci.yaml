@@ -5,20 +5,15 @@ on:
   pull_request: { branches: [main] }
   create: { tags: [v*] }
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: bash
 
 jobs:
-  cancel:
-    name: Cancel redundant actions already in progress
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cancel actions in progress of same workflow and same branch
-        uses: styfle/cancel-workflow-action@0.9.0
-        with:
-          access_token: ${{ github.token }}
-
   # Check that Haskell code is formatted.
   code-formatter:
     runs-on: ubuntu-latest
@@ -48,7 +43,7 @@ jobs:
 
     steps:
       - name: Checkout the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Cache (Unix)
         uses: actions/cache@v4
@@ -134,10 +129,10 @@ jobs:
           stack path --stack-root
           stack ghc -- --version
           ghc --version
-          
-      - name: Build dependencies 
+
+      - name: Build dependencies
         run: stack --install-ghc test --only-dependencies
-      
+
       - name: Build StrongPath & Run tests
         run: stack test
 
