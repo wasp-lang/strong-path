@@ -15,7 +15,7 @@ category:            System, Filesystem, FilePath
 
 description:         Replacement for a FilePath that enables you to handle filepaths in your code in a type-safe manner. You can specify at type level if they are relative, absolute, file, directory, posix, windows, and even to which file or directory they point to or are relative to.
 
-tested-with: GHC == 8.10.7, GHC == 9.0.1  # lts-18.21, nightly-2022-01-04
+tested-with: GHC == 9.0.2  # lts-19.33
 
 dependencies:
   - base >= 4.7 && < 5
