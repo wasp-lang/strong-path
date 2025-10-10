@@ -111,11 +111,9 @@ jobs:
 
       # NOTE: I commented out this in favor of manual setup above, since with this action we
       #       couldn't get the latest version of Stack.
-      - name: Set up Haskell (Stack)
-        uses: haskell/actions/setup@v1
+      - uses: haskell-actions/setup@v2
         with:
           ghc-version: latest
-          cabal-version: "3.12.1.0"
           enable-stack: true
           stack-version: latest
 
