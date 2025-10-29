@@ -105,43 +105,55 @@ parent path = case path of
 (</>) :: Path s b (Dir d) -> Path s (Rel d) t -> Path s b t
 ---- System
 lsp@(RelDir _ _) </> (RelFile rp rprefix) =
-  let (RelDir lp' lprefix') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in RelFile (lp' P.</> rp) lprefix'
+  case iterate parent lsp !! prefixNumParentDirs rprefix of
+    (RelDir lp' lprefix') -> RelFile (lp' P.</> rp) lprefix'
+    _ -> impossible
 lsp@(RelDir _ _) </> (RelDir rp rprefix) =
-  let (RelDir lp' lprefix') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in RelDir (lp' P.</> rp) lprefix'
+  case iterate parent lsp !! prefixNumParentDirs rprefix of
+    (RelDir lp' lprefix') -> RelDir (lp' P.</> rp) lprefix'
+    _ -> impossible
 lsp@(AbsDir _) </> (RelFile rp rprefix) =
-  let (AbsDir lp') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in AbsFile (lp' P.</> rp)
+  case iterate parent lsp !! prefixNumParentDirs rprefix of
+    (AbsDir lp') -> AbsFile (lp' P.</> rp)
+    _ -> impossible
 lsp@(AbsDir _) </> (RelDir rp rprefix) =
-  let (AbsDir lp') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in AbsDir (lp' P.</> rp)
+  case iterate parent lsp !! prefixNumParentDirs rprefix of
+    (AbsDir lp') -> AbsDir (lp' P.</> rp)
+    _ -> impossible
 ---- Windows
 lsp@(RelDirW _ _) </> (RelFileW rp rprefix) =
-  let (RelDirW lp' lprefix') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in RelFileW (lp' PW.</> rp) lprefix'
+  case iterate parent lsp !! prefixNumParentDirs rprefix of
+    (RelDirW lp' lprefix') -> RelFileW (lp' PW.</> rp) lprefix'
+    _ -> impossible
 lsp@(RelDirW _ _) </> (RelDirW rp rprefix) =
-  let (RelDirW lp' lprefix') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in RelDirW (lp' PW.</> rp) lprefix'
+  case iterate parent lsp !! prefixNumParentDirs rprefix of
+    (RelDirW lp' lprefix') -> RelDirW (lp' PW.</> rp) lprefix'
+    _ -> impossible
 lsp@(AbsDirW _) </> (RelFileW rp rprefix) =
-  let (AbsDirW lp') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in AbsFileW (lp' PW.</> rp)
+  case iterate parent lsp !! prefixNumParentDirs rprefix of
+    (AbsDirW lp') -> AbsFileW (lp' PW.</> rp)
+    _ -> impossible
 lsp@(AbsDirW _) </> (RelDirW rp rprefix) =
-  let (AbsDirW lp') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in AbsDirW (lp' PW.</> rp)
+  case iterate parent lsp !! prefixNumParentDirs rprefix of
+    (AbsDirW lp') -> AbsDirW (lp' PW.</> rp)
+    _ -> impossible
 ---- Posix
 lsp@(RelDirP _ _) </> (RelFileP rp rprefix) =
-  let (RelDirP lp' lprefix') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in RelFileP (lp' PP.</> rp) lprefix'
+  case iterate parent lsp !! prefixNumParentDirs rprefix of
+    (RelDirP lp' lprefix') -> RelFileP (lp' PP.</> rp) lprefix'
+    _ -> impossible
 lsp@(RelDirP _ _) </> (RelDirP rp rprefix) =
-  let (RelDirP lp' lprefix') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in RelDirP (lp' PP.</> rp) lprefix'
+  case iterate parent lsp !! prefixNumParentDirs rprefix of
+    (RelDirP lp' lprefix') -> RelDirP (lp' PP.</> rp) lprefix'
+    _ -> impossible
 lsp@(AbsDirP _) </> (RelFileP rp rprefix) =
-  let (AbsDirP lp') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in AbsFileP (lp' PP.</> rp)
+  case iterate parent lsp !! prefixNumParentDirs rprefix of
+    (AbsDirP lp') -> AbsFileP (lp' PP.</> rp)
+    _ -> impossible
 lsp@(AbsDirP _) </> (RelDirP rp rprefix) =
-  let (AbsDirP lp') = iterate parent lsp !! prefixNumParentDirs rprefix
-   in AbsDirP (lp' PP.</> rp)
+  case iterate parent lsp !! prefixNumParentDirs rprefix of
+    (AbsDirP lp') -> AbsDirP (lp' PP.</> rp)
+    _ -> impossible
 _ </> _ = impossible
 
 -- | Returns the most right member of the path once split by separators.
@@ -233,7 +245,7 @@ castFile _ = impossible
 -- Works well for \"normal\" relative paths like @\"a\\b\\c\"@ (Win) or @\"a\/b\/c\"@ (Posix).
 -- If path is weird but still considered relative, like just @\"C:\"@ on Win,
 -- results can be unexpected, most likely resulting with error thrown.
-relDirToPosix :: MonadThrow m => Path s (Rel d1) (Dir d2) -> m (Path Posix (Rel d1) (Dir d2))
+relDirToPosix :: (MonadThrow m) => Path s (Rel d1) (Dir d2) -> m (Path Posix (Rel d1) (Dir d2))
 relDirToPosix sp@(RelDir _ _) = parseRelDirP $ FPP.joinPath $ FP.splitDirectories $ toFilePath sp
 relDirToPosix sp@(RelDirW _ _) = parseRelDirP $ FPP.joinPath $ FPW.splitDirectories $ toFilePath sp
 relDirToPosix (RelDirP p pr) = return $ RelDirP p pr
@@ -241,7 +253,7 @@ relDirToPosix _ = impossible
 
 -- | Converts relative file path to posix, if it is not already posix.
 -- Check 'relDirToPosix' for more details, they behave the same.
-relFileToPosix :: MonadThrow m => Path s (Rel d1) (File f) -> m (Path Posix (Rel d1) (File f))
+relFileToPosix :: (MonadThrow m) => Path s (Rel d1) (File f) -> m (Path Posix (Rel d1) (File f))
 relFileToPosix sp@(RelFile _ _) = parseRelFileP $ FPP.joinPath $ FP.splitDirectories $ toFilePath sp
 relFileToPosix sp@(RelFileW _ _) = parseRelFileP $ FPP.joinPath $ FPW.splitDirectories $ toFilePath sp
 relFileToPosix (RelFileP p pr) = return $ RelFileP p pr
