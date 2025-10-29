@@ -25,7 +25,6 @@ library:
   ghc-options:
     - -Wall
   dependencies:
-    # TODO: I set them both to the same version, figure out what do do
     # NOTE: Version bounds here and in tests are defined so that they cover the latest LTS snapshot
     #   (lts-21.7) (lower bounds) and the nightly snapshot defined in stack.yaml (upper bounds).
     #   Those two are also tested in the CI, and corresponding GHC versions are mentioned above
