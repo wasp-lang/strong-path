@@ -1,5 +1,5 @@
 name:                strong-path
-version:             1.1.4.0
+version:             1.2.0.0
 github:              "wasp-lang/strong-path"
 license:             MIT
 author:              "Martin Sosic"
@@ -15,28 +15,51 @@ category:            System, Filesystem, FilePath
 
 description:         Replacement for a FilePath that enables you to handle filepaths in your code in a type-safe manner. You can specify at type level if they are relative, absolute, file, directory, posix, windows, and even to which file or directory they point to or are relative to.
 
-tested-with: GHC == 8.10.7, GHC == 9.0.1  # lts-18.21, nightly-2022-01-04
+tested-with: GHC == 9.0.2, GHC == 9.12.2  # lts-19.33, nightly-2025-10-29
 
 dependencies:
   - base >= 4.7 && < 5
+  - hashable >=1.3 && < 1.6
+  - path >=0.9.2 && <0.10
+  - filepath >=1.4 && <1.6
 
 library:
   source-dirs: src
   ghc-options:
     - -Wall
   dependencies:
-    # NOTE: Version bounds here and in tests are defined so that they cover the latest LTS snapshot
-    #   (lts-18.21) (lower bounds) and the nightly snapshot defined in stack.yaml (upper bounds).
-    #   Those two are also tested in the CI, and corresponding GHC versions are mentioned above
-    #   in the tested-with field.
-    #   In case you decide to cover a different LTS with the lower bounds,
-    #   make sure to also update the CI to use the correct LTS for testing and also update
-    #   tested-with field above.
-    - path >=0.9.2 && <0.10
+    # NOTE: Version bounds here and in tests are defined so that they cover the
+    #   latest LTS snapshot (lts-19.33) (lower bounds) and the nightly snapshot
+    #   defined in stack.yaml (upper bounds). We are ignoring the minor
+    #   versions on the lower bound for better flexibility.
+    #
+    #   Those two LTS snapshots are also tested in the CI, and corresponding
+    #   GHC versions are mentioned above in the tested-with field.
+    #
+    #   If you decide to cover a different LTS with the lower bounds, make sure
+    #   to also update the CI to use the correct LTS for testing and also
+    #   update tested-with field above.
+    #
+    #   When doing a GHC update:
+    #   - Read this to learn more about the process:
+    #     https://github.com/wasp-lang/haskell-handbook/blob/master/dependencies-version-bounds.md
+    #   - Ensure you don't leave a gap in supported GHC versions. Each GHC/base
+    #     should have a version of StrongPath to go with it.
+    #   - Go through the breaking changes version of all libraries that need to
+    #     be bumped and double check they don't affect us.
+    #
+    #   The current situation:
+    #   - Lower bounds match GHC 9.0.2 (Stack's LTS 19.33, major digits only)
+    #   - Upper bounds match GHC 9.12.2 (Stack's nightly-2025-10-29). The
+    #     exclusive upper limit is set to the next breaking change version.
+    #
+    #   For example:
+    #   - `LTS 19.33` has the version of `filepath` set to `1.4.2.2`
+    #   - `nighly-2025-10-29` says has a version of `filepath` set to `1.5.4.0`
+    #   - Strong path requires `filepath >=1.4 && <1.6`
+    #
     - exceptions >=0.10 && <0.11
-    - filepath >=1.4 && <1.5
-    - template-haskell >=2.16 && <2.18
-    - hashable >=1.3 && < 1.4
+    - template-haskell >=2.17 && <2.24
 
 tests:
   strong-path-test:
@@ -48,11 +71,8 @@ tests:
       - -with-rtsopts=-N
     dependencies:
       - strong-path
-      - path
-      - filepath
-      - hashable >=1.3 && < 1.4
-      - tasty >=1.4 && <1.5
-      - tasty-hspec >=1.1 && <1.3
-      - tasty-quickcheck >=0.10 && <0.11
-      - tasty-discover >=4.2 && <4.3
-      - hspec >=2.7 && <2.10
+      - tasty >=1.4 && <1.6
+      - tasty-hspec >=1.2 && <1.3
+      - tasty-quickcheck >=0.10 && <0.12
+      - tasty-discover >=4.2 && <5.3
+      - hspec >=2.8 && <2.12

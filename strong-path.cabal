@@ -1,11 +1,11 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
 name:           strong-path
-version:        1.1.4.0
+version:        1.2.0.0
 synopsis:       Strongly typed paths in Haskell.
 description:    Replacement for a FilePath that enables you to handle filepaths in your code in a type-safe manner. You can specify at type level if they are relative, absolute, file, directory, posix, windows, and even to which file or directory they point to or are relative to.
 category:       System, Filesystem, FilePath
@@ -18,7 +18,7 @@ license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 tested-with:
-    GHC == 8.10.7, GHC == 9.0.1
+    GHC == 9.0.2, GHC == 9.12.2
 extra-source-files:
     README.md
     ChangeLog.md
@@ -45,10 +45,10 @@ library
   build-depends:
       base >=4.7 && <5
     , exceptions ==0.10.*
-    , filepath ==1.4.*
-    , hashable ==1.3.*
+    , filepath >=1.4 && <1.6
+    , hashable >=1.3 && <1.6
     , path >=0.9.2 && <0.10
-    , template-haskell >=2.16 && <2.18
+    , template-haskell >=2.17 && <2.24
   default-language: Haskell2010
 
 test-suite strong-path-test
@@ -69,13 +69,13 @@ test-suite strong-path-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , filepath
-    , hashable ==1.3.*
-    , hspec >=2.7 && <2.10
-    , path
+    , filepath >=1.4 && <1.6
+    , hashable >=1.3 && <1.6
+    , hspec >=2.8 && <2.12
+    , path >=0.9.2 && <0.10
     , strong-path
-    , tasty ==1.4.*
-    , tasty-discover ==4.2.*
-    , tasty-hspec >=1.1 && <1.3
-    , tasty-quickcheck ==0.10.*
+    , tasty >=1.4 && <1.6
+    , tasty-discover >=4.2 && <5.3
+    , tasty-hspec ==1.2.*
+    , tasty-quickcheck >=0.10 && <0.12
   default-language: Haskell2010
