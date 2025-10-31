@@ -13,18 +13,16 @@ systemFpRoot = if FP.pathSeparator == '\\' then "C:\\" else "/"
 
 -- | Takes posix path and converts it into windows path if running on Windows or leaves as it is if on Unix.
 posixToSystemFp :: FilePath -> FilePath
-posixToSystemFp = convertPosixPath systemFpRoot FP.pathSeparator
+posixToSystemFp = convertPosixFp systemFpRoot FP.pathSeparator
 
 -- | Takes posix path and converts it into windows path.
 posixToWindowsFp :: FilePath -> FilePath
-posixToWindowsFp = convertPosixPath "C:\\" FPW.pathSeparator
+posixToWindowsFp = convertPosixFp "C:\\" FPW.pathSeparator
 
-convertPosixPath :: FilePath -> Char -> FilePath -> FilePath
-convertPosixPath rootReplacement separator posixFp =
+convertPosixFp :: FilePath -> Char -> FilePath -> FilePath
+convertPosixFp newRoot newSeparator posixFp =
   case posixFp of
-    "" -> ""
-    '/' : rest -> rootReplacement ++ map convertSeparator rest
-    _ -> map convertSeparator posixFp
-  where
-    convertSeparator '/' = separator
-    convertSeparator c = c
+    "" -> error "Empty string is not a valid posix path."
+    '/' : restOfAbsPosixFp -> newRoot ++ map convertSeparator restOfAbsPosixFp
+    relPosixFp -> map convertSeparator relPosixFp
+  where convertSeparator c = if c == '/' then newSeparator else c
