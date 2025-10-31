@@ -28,13 +28,36 @@ library:
   ghc-options:
     - -Wall
   dependencies:
-    # NOTE: Version bounds here and in tests are defined so that they cover the latest LTS snapshot
-    #   (lts-19.33) (lower bounds) and the nightly snapshot defined in stack.yaml (upper bounds).
-    #   Those two are also tested in the CI, and corresponding GHC versions are mentioned above
-    #   in the tested-with field.
-    #   In case you decide to cover a different LTS with the lower bounds,
-    #   make sure to also update the CI to use the correct LTS for testing and also update
-    #   tested-with field above.
+    # NOTE: Version bounds here and in tests are defined so that they cover the
+    #   latest LTS snapshot (lts-19.33) (lower bounds) and the nightly snapshot
+    #   defined in stack.yaml (upper bounds). We are ignoring the minor
+    #   versions on the lower bound for better flexibility.
+    #
+    #   Those two LTS snapshots are also tested in the CI, and corresponding
+    #   GHC versions are mentioned above in the tested-with field.
+    #
+    #   If you decide to cover a different LTS with the lower bounds, make sure
+    #   to also update the CI to use the correct LTS for testing and also
+    #   update tested-with field above.
+    #
+    #   When doing a GHC update:
+    #   - Read this to learn more about the process:
+    #     https://github.com/wasp-lang/haskell-handbook/blob/master/dependencies-version-bounds.md
+    #   - Ensure you don't leave a gap in supported GHC versions. Each GHC/base
+    #     should have a version of StrongPath to go with it.
+    #   - Go through the breaking changes version of all libraries that need to
+    #     be bumped and double check they don't affect us.
+    #
+    #   The current situation:
+    #   - Lower bounds match GHC 9.0.2 (Stack's LTS 19.33, major digits only)
+    #   - Upper bounds match GHC 9.12.2 (Stack's nightly-2025-10-29). The
+    #     exclusive upper limit is set to the next breaking change version.
+    #
+    #   For example:
+    #   - `LTS 19.33` has the version of `filepath` set to `1.4.2.2`
+    #   - `nighly-2025-10-29` says has a version of `filepath` set to `1.5.4.0`
+    #   - Strong path requires `filepath >=1.4 && <1.6`
+    #
     - exceptions >=0.10 && <0.11
     - template-haskell >=2.17 && <2.24
 
