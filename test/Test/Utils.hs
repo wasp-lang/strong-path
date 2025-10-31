@@ -25,4 +25,5 @@ convertPosixFp newRoot newSeparator posixFp =
     "" -> error "Empty string is not a valid posix path."
     '/' : restOfAbsPosixFp -> newRoot ++ map convertSeparator restOfAbsPosixFp
     relPosixFp -> map convertSeparator relPosixFp
-  where convertSeparator c = if c == '/' then newSeparator else c
+  where 
+    convertSeparator c = if c == '/' then newSeparator else c
